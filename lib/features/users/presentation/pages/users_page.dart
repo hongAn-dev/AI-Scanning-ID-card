@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
 
 import '../bloc/user_bloc.dart';
 import '../widgets/user_card.dart';
@@ -20,9 +21,7 @@ class UsersPage extends StatelessWidget {
       body: BlocBuilder<UserBloc, UserState>(
         builder: (context, state) {
           if (state is UserLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           } else if (state is UsersLoaded) {
             return RefreshIndicator(
               onRefresh: () async {
@@ -52,11 +51,7 @@ class UsersPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red[300],
-                  ),
+                  Icon(Icons.error_outline, size: 64, color: AppColors.red),
                   const SizedBox(height: 16),
                   Text(
                     state.message,

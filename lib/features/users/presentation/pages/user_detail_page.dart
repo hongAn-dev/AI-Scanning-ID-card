@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
 
 import '../../domain/entities/user.dart';
 import '../bloc/user_bloc.dart';
@@ -24,9 +25,7 @@ class UserDetailPage extends StatelessWidget {
       body: BlocBuilder<UserBloc, UserState>(
         builder: (context, state) {
           if (state is UserLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           } else if (state is UserDetailLoaded) {
             return _buildUserDetails(context, state.user);
           } else if (state is UserError) {
@@ -34,11 +33,7 @@ class UserDetailPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red[300],
-                  ),
+                  Icon(Icons.error_outline, size: 64, color: AppColors.red),
                   const SizedBox(height: 16),
                   Text(
                     state.message,
@@ -48,9 +43,9 @@ class UserDetailPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () {
-                      context
-                          .read<UserBloc>()
-                          .add(GetUserByIdEvent(id: userId));
+                      context.read<UserBloc>().add(
+                        GetUserByIdEvent(id: userId),
+                      );
                     },
                     icon: const Icon(Icons.refresh),
                     label: const Text('Retry'),
@@ -77,7 +72,7 @@ class UserDetailPage extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 50,
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppColors.red,
                   child: Text(
                     user.name[0].toUpperCase(),
                     style: const TextStyle(fontSize: 40, color: Colors.white),
@@ -87,15 +82,15 @@ class UserDetailPage extends StatelessWidget {
                 Text(
                   user.name,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '@${user.username}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.grey,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(color: Colors.grey),
                 ),
               ],
             ),
@@ -103,66 +98,61 @@ class UserDetailPage extends StatelessWidget {
           const SizedBox(height: 32),
 
           // Contact Information
-          _buildSection(
-            context,
-            'Contact Information',
-            [
-              _buildInfoRow(Icons.email, 'Email', user.email),
-              _buildInfoRow(Icons.phone, 'Phone', user.phone),
-              _buildInfoRow(Icons.language, 'Website', user.website),
-            ],
-          ),
+          _buildSection(context, 'Contact Information', [
+            _buildInfoRow(Icons.email, 'Email', user.email),
+            _buildInfoRow(Icons.phone, 'Phone', user.phone),
+            _buildInfoRow(Icons.language, 'Website', user.website),
+          ]),
           const SizedBox(height: 24),
 
           // Address
-          _buildSection(
-            context,
-            'Address',
-            [
-              _buildInfoRow(Icons.home, 'Street', user.address.street),
-              _buildInfoRow(Icons.apartment, 'Suite', user.address.suite),
-              _buildInfoRow(Icons.location_city, 'City', user.address.city),
-              _buildInfoRow(
-                  Icons.markunread_mailbox, 'Zipcode', user.address.zipcode),
-            ],
-          ),
+          _buildSection(context, 'Address', [
+            _buildInfoRow(Icons.home, 'Street', user.address.street),
+            _buildInfoRow(Icons.apartment, 'Suite', user.address.suite),
+            _buildInfoRow(Icons.location_city, 'City', user.address.city),
+            _buildInfoRow(
+              Icons.markunread_mailbox,
+              'Zipcode',
+              user.address.zipcode,
+            ),
+          ]),
           const SizedBox(height: 24),
 
           // Company
-          _buildSection(
-            context,
-            'Company',
-            [
-              _buildInfoRow(Icons.business, 'Name', user.company.name),
-              _buildInfoRow(
-                  Icons.lightbulb, 'Catch Phrase', user.company.catchPhrase),
-              _buildInfoRow(Icons.business_center, 'BS', user.company.bs),
-            ],
-          ),
+          _buildSection(context, 'Company', [
+            _buildInfoRow(Icons.business, 'Name', user.company.name),
+            _buildInfoRow(
+              Icons.lightbulb,
+              'Catch Phrase',
+              user.company.catchPhrase,
+            ),
+            _buildInfoRow(Icons.business_center, 'BS', user.company.bs),
+          ]),
         ],
       ),
     );
   }
 
   Widget _buildSection(
-      BuildContext context, String title, List<Widget> children) {
+    BuildContext context,
+    String title,
+    List<Widget> children,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         Card(
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              children: children,
-            ),
+            child: Column(children: children),
           ),
         ),
       ],

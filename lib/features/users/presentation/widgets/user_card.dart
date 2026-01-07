@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 
 import '../../domain/entities/user.dart';
 
@@ -6,20 +7,14 @@ class UserCard extends StatelessWidget {
   final User user;
   final VoidCallback onTap;
 
-  const UserCard({
-    super.key,
-    required this.user,
-    required this.onTap,
-  });
+  const UserCard({super.key, required this.user, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -30,7 +25,7 @@ class UserCard extends StatelessWidget {
               // Avatar
               CircleAvatar(
                 radius: 30,
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.red,
                 child: Text(
                   user.name[0].toUpperCase(),
                   style: const TextStyle(
@@ -57,19 +52,12 @@ class UserCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       user.email,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
-                          Icons.phone,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
+                        Icon(Icons.phone, size: 14, color: Colors.grey[600]),
                         const SizedBox(width: 4),
                         Text(
                           user.phone,
@@ -85,11 +73,7 @@ class UserCard extends StatelessWidget {
               ),
 
               // Arrow Icon
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
             ],
           ),
         ),

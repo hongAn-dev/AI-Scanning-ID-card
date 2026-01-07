@@ -1,136 +1,42 @@
-part of 'customer_bloc.dart';
+import 'package:equatable/equatable.dart';
+import '../../domain/entities/customer.dart';
 
 abstract class CustomerState extends Equatable {
+  const CustomerState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class CustomerInitial extends CustomerState {}
+
+class CustomerLoading extends CustomerState {}
+
+class CustomerLoaded extends CustomerState {
   final List<Customer> customers;
-  final List<CustomerGroup> groups;
-  final bool isLoadingCustomers;
-  final bool isLoadingGroups;
-  final String? errorMessage;
+  final bool hasReachedMax;
 
-  const CustomerState({
-    this.customers = const [],
-    this.groups = const [],
-    this.isLoadingCustomers = false,
-    this.isLoadingGroups = false,
-    this.errorMessage,
-  });
+  const CustomerLoaded({required this.customers, this.hasReachedMax = false});
 
-  @override
-  List<Object?> get props => [
-        customers,
-        groups,
-        isLoadingCustomers,
-        isLoadingGroups,
-        errorMessage,
-      ];
-
-  // Helper method to copy state with new values
-  CustomerState copyWith({
+  CustomerLoaded copyWith({
     List<Customer>? customers,
-    List<CustomerGroup>? groups,
-    bool? isLoadingCustomers,
-    bool? isLoadingGroups,
-    String? errorMessage,
-  });
-}
-
-class CustomerInitial extends CustomerState {
-  const CustomerInitial() : super();
-
-  @override
-  CustomerState copyWith({
-    List<Customer>? customers,
-    List<CustomerGroup>? groups,
-    bool? isLoadingCustomers,
-    bool? isLoadingGroups,
-    String? errorMessage,
+    bool? hasReachedMax,
   }) {
-    return CustomerDataState(
+    return CustomerLoaded(
       customers: customers ?? this.customers,
-      groups: groups ?? this.groups,
-      isLoadingCustomers: isLoadingCustomers ?? this.isLoadingCustomers,
-      isLoadingGroups: isLoadingGroups ?? this.isLoadingGroups,
-      errorMessage: errorMessage,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
     );
   }
-}
-
-class CustomerDataState extends CustomerState {
-  const CustomerDataState({
-    super.customers,
-    super.groups,
-    super.isLoadingCustomers,
-    super.isLoadingGroups,
-    super.errorMessage,
-  });
 
   @override
-  CustomerState copyWith({
-    List<Customer>? customers,
-    List<CustomerGroup>? groups,
-    bool? isLoadingCustomers,
-    bool? isLoadingGroups,
-    String? errorMessage,
-  }) {
-    return CustomerDataState(
-      customers: customers ?? this.customers,
-      groups: groups ?? this.groups,
-      isLoadingCustomers: isLoadingCustomers ?? this.isLoadingCustomers,
-      isLoadingGroups: isLoadingGroups ?? this.isLoadingGroups,
-      errorMessage: errorMessage,
-    );
-  }
+  List<Object> get props => [customers, hasReachedMax];
 }
 
-// Legacy states for backward compatibility
-class CustomerLoading extends CustomerDataState {
-  const CustomerLoading({super.groups}) : super(isLoadingCustomers: true);
-}
+class CustomerError extends CustomerState {
+  final String message;
 
-class CustomerLoaded extends CustomerDataState {
-  const CustomerLoaded({required super.customers, super.groups});
-}
-
-class CustomerError extends CustomerDataState {
-  const CustomerError({required String message, super.groups})
-      : super(errorMessage: message);
-}
-
-class CustomerGroupLoading extends CustomerDataState {
-  const CustomerGroupLoading({super.customers}) : super(isLoadingGroups: true);
-}
-
-class CustomerGroupLoaded extends CustomerDataState {
-  const CustomerGroupLoaded({required super.groups, super.customers});
-}
-
-class CustomerGroupError extends CustomerDataState {
-  const CustomerGroupError({required String message, super.customers})
-      : super(errorMessage: message);
-}
-
-// Add Customer States
-class CustomerAdding extends CustomerDataState {
-  const CustomerAdding({super.customers, super.groups});
-}
-
-class CustomerAdded extends CustomerDataState {
-  final Customer addedCustomer;
-
-  const CustomerAdded({
-    required this.addedCustomer,
-    super.customers,
-    super.groups,
-  });
+  const CustomerError({required this.message});
 
   @override
-  List<Object?> get props => [...super.props, addedCustomer];
-}
-
-class CustomerAddError extends CustomerDataState {
-  const CustomerAddError({
-    required String message,
-    super.customers,
-    super.groups,
-  }) : super(errorMessage: message);
+  List<Object> get props => [message];
 }

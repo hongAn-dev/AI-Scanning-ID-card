@@ -13,6 +13,8 @@ class AuthService {
   static const String _keyRememberMe = 'remember_me';
   static const String _keyAccessToken = 'access_token';
   static const String _keyUserAccount = 'user_account';
+  static const String _keyLocationId = 'location_id';
+  static const String _keyLocationName = 'location_name';
 
   final SharedPreferences _prefs;
   final DioClient _dioClient;
@@ -32,7 +34,7 @@ class AuthService {
     }
 
     try {
-      // Call API login
+      print('🚀 Logging in with: CustomerCode=$customerCode, User=$username');
       final response = await _dioClient.post(
         '${ApiConstants.baseUrl}${ApiConstants.loginEndpoint}',
         data: {
@@ -41,8 +43,13 @@ class AuthService {
           'TenantCode': customerCode,
           'TenantId': 0,
           'Language': 'en',
+          'IdChannel':
+              'eyJhbGciOiJIUzI1NiJ9.eyJwYWNrYWdlbmFtZSI6Im1hc3RlcnByby5jdXN0b21lcl9hZGQifQ.hO_lurH-dRcESYrvbDdpUAZ9kM-dhJC3XEMv1eWN7qw',
         },
       );
+
+      print('✅ Login Response Code: ${response.statusCode}');
+      print('Response Data: ${response.data}');
 
       // Check if login successful
       if (response.statusCode == 200 && response.data != null) {
@@ -58,10 +65,13 @@ class AuthService {
           }
 
           // Save Account information as User model
-          final account = data['Acount']; // Note: API uses 'Acount' (typo in API)
+          final account =
+              data['Acount']; // Note: API uses 'Acount' (typo in API)
           if (account != null) {
             final userAccountModel = UserAccountModel.fromJson(account);
-            await _prefs.setString(_keyUserAccount, userAccountModel.toJsonString());
+            await _prefs.setString(
+                _keyUserAccount, userAccountModel.toJsonString());
+            print('👤 Logged In User Info: ${userAccountModel.toJsonString()}');
           }
 
           // Save login state
@@ -81,12 +91,16 @@ class AuthService {
           }
 
           return true;
+        } else {
+          print('❌ Login failed: Meta status not 0 or data null. Meta: $meta');
         }
+      } else {
+        print('❌ Login failed: StatusCode ${response.statusCode}');
       }
 
       return false;
     } catch (e) {
-      print('Login error: $e');
+      print('❌ Login error: $e');
       return false;
     }
   }
@@ -131,11 +145,29 @@ class AuthService {
     }
 
     try {
-      return UserAccountModel.fromJsonString(jsonString).toEntity();
+      final entity = UserAccountModel.fromJsonString(jsonString).toEntity();
+      print("👤 Current User Info (Cached): $jsonString");
+      return entity;
     } catch (e) {
       print('Error parsing user account: $e');
       return null;
     }
+  }
+
+  Future<void> saveLocationId(String id) async {
+    await _prefs.setString(_keyLocationId, id);
+  }
+
+  String? getLocationId() {
+    return _prefs.getString(_keyLocationId);
+  }
+
+  Future<void> saveLocationName(String name) async {
+    await _prefs.setString(_keyLocationName, name);
+  }
+
+  String? getLocationName() {
+    return _prefs.getString(_keyLocationName);
   }
 
   // Change password

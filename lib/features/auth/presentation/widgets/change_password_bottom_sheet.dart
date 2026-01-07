@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class ChangePasswordBottomSheet extends StatefulWidget {
   const ChangePasswordBottomSheet({super.key});
@@ -58,10 +59,7 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
               children: [
                 const Text(
                   'Đổi mật khẩu',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -106,11 +104,11 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.red),
+                          borderSide: BorderSide(color: AppColors.red),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.red),
+                          borderSide: BorderSide(color: AppColors.red),
                         ),
                         labelStyle: const TextStyle(color: Colors.black),
                       ),
@@ -148,11 +146,11 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.red),
+                          borderSide: BorderSide(color: AppColors.red),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.red),
+                          borderSide: BorderSide(color: AppColors.red),
                         ),
                       ),
                       validator: (value) {
@@ -175,9 +173,9 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Colors.red),
+                          side: BorderSide(color: AppColors.red),
                         ),
-                        backgroundColor: Colors.red,
+                        backgroundColor: AppColors.red,
                         foregroundColor: Colors.white,
                       ),
                       child: _isLoading

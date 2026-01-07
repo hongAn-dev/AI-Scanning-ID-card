@@ -1,28 +1,61 @@
-import 'package:equatable/equatable.dart';
-
-import 'customer_group.dart';
-
-class Customer extends Equatable {
-  final int id;
-  final String? uuid; // UUID from API (Id field) - e.g., "7c8880ec-900b-424e-851a-4a995402b1f2"
+class Customer {
+  final String id;
+  final String? locationId; // Added locationId
   final String name;
-  final String phone;
-  final String address;
-  final String? note;
-  final CustomerGroup? group;
-  final DateTime createdAt;
+  final String? phone;
+  final String? code;
+  final String? gender;
+  final String? identityNumber; // CCCD
+  final String? address; // Thuong tru
+  final String? hometown; // Que quan
+  final DateTime? dob;
+  final DateTime? issueDate;
+  final DateTime? expiryDate;
+  final String? avatarPath;
+  final String? frontImagePath;
+  final String? backImagePath;
+  final String? nationality;
+  final String? groupId;
 
-  const Customer({
+  Customer({
     required this.id,
-    this.uuid,
+    this.locationId, // Added locationId
     required this.name,
-    required this.phone,
-    required this.address,
-    this.note,
-    this.group,
-    required this.createdAt,
+    this.phone,
+    this.code,
+    this.gender,
+    this.identityNumber,
+    this.address,
+    this.hometown,
+    this.dob,
+    this.issueDate,
+    this.expiryDate,
+    this.avatarPath,
+    this.frontImagePath,
+    this.backImagePath,
+    this.nationality,
+    this.groupId,
   });
 
-  @override
-  List<Object?> get props => [id, uuid, name, phone, address, note, group, createdAt];
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'customerId': id, // Mapping for ScanCccdPage compatibility if needed
+      'phone': phone,
+      'code': code,
+      'sex': gender,
+      'id': identityNumber,
+      'residence': address,
+      'hometown': hometown,
+      'dob': dob != null ? "${dob!.day}/${dob!.month}/${dob!.year}" : null,
+      'issueDate': issueDate != null
+          ? "${issueDate!.day}/${issueDate!.month}/${issueDate!.year}"
+          : null,
+      'expiry': expiryDate != null
+          ? "${expiryDate!.day}/${expiryDate!.month}/${expiryDate!.year}"
+          : null,
+      'avatarPath': avatarPath,
+      'nationality': nationality,
+    };
+  }
 }

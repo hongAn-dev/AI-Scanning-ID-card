@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 
 import '../../../../injection_container.dart' as di;
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/widgets/change_password_bottom_sheet.dart';
-import '../../../orders/presentation/pages/order_history_page.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
@@ -24,9 +24,6 @@ class AccountPage extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              // Reset CartBloc before logout
-              await di.resetCartBloc();
-
               // Perform logout
               await authService.logout();
 
@@ -41,7 +38,7 @@ class AccountPage extends StatelessWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.red,
               foregroundColor: Colors.white,
             ),
             child: const Text('Đăng xuất'),
@@ -109,7 +106,7 @@ class AccountPage extends StatelessWidget {
               children: [
                 Icon(
                   isSuccess ? Icons.check_circle : Icons.error,
-                  color: isSuccess ? Colors.green : Colors.red,
+                  color: isSuccess ? Colors.green : AppColors.red,
                 ),
                 const SizedBox(width: 8),
                 Text(isSuccess ? 'Thành công' : 'Thất bại'),
@@ -205,43 +202,32 @@ class AccountPage extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Account Information
-                  _buildInfoSection(
-                    'Thông tin liên hệ',
-                    [
-                      if (userAccount.email.isNotEmpty) ...[
-                        _buildInfoTile(
-                          Icons.email,
-                          'Email',
-                          userAccount.email,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Divider(
-                            color: Colors.grey.withOpacity(.4),
-                          ),
-                        ),
-                      ],
-                      if (userAccount.companyTel1.isNotEmpty) ...[
-                        _buildInfoTile(
-                          Icons.phone,
-                          'Điện thoại 1',
-                          userAccount.companyTel1,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Divider(
-                            color: Colors.grey.withOpacity(.4),
-                          ),
-                        ),
-                      ],
-                      if (userAccount.companyTel2.isNotEmpty)
-                        _buildInfoTile(
-                          Icons.phone,
-                          'Điện thoại 2',
-                          userAccount.companyTel2,
-                        ),
+                  _buildInfoSection('Thông tin liên hệ', [
+                    if (userAccount.email.isNotEmpty) ...[
+                      _buildInfoTile(Icons.email, 'Email', userAccount.email),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Divider(color: Colors.grey.withOpacity(.4)),
+                      ),
                     ],
-                  ),
+                    if (userAccount.companyTel1.isNotEmpty) ...[
+                      _buildInfoTile(
+                        Icons.phone,
+                        'Điện thoại 1',
+                        userAccount.companyTel1,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Divider(color: Colors.grey.withOpacity(.4)),
+                      ),
+                    ],
+                    if (userAccount.companyTel2.isNotEmpty)
+                      _buildInfoTile(
+                        Icons.phone,
+                        'Điện thoại 2',
+                        userAccount.companyTel2,
+                      ),
+                  ]),
 
                   // const SizedBox(height: 16),
 
@@ -257,7 +243,6 @@ class AccountPage extends StatelessWidget {
                   //       ),
                   //     ],
                   //   ),
-
                   const SizedBox(height: 24),
 
                   // Action Buttons
@@ -269,14 +254,7 @@ class AccountPage extends StatelessWidget {
                           context,
                           Icons.history,
                           'Danh sách đơn hàng',
-                          () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const OrderHistoryPage(),
-                              ),
-                            );
-                          },
+                          () {},
                         ),
                         const SizedBox(height: 12),
                         _buildActionButton(
@@ -311,10 +289,7 @@ class AccountPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
         const SizedBox(height: 8),
@@ -354,16 +329,13 @@ class AccountPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isDestructive ? Colors.red : Colors.grey.shade700,
+            color: isDestructive ? AppColors.red : Colors.grey.shade700,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: isDestructive ? Colors.red : null,
-            ),
+            Icon(icon, color: isDestructive ? AppColors.red : null),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -371,14 +343,14 @@ class AccountPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: isDestructive ? Colors.red : null,
+                  color: isDestructive ? AppColors.red : null,
                 ),
               ),
             ),
             Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: isDestructive ? Colors.red : Colors.grey,
+              color: isDestructive ? AppColors.red : Colors.grey,
             ),
           ],
         ),

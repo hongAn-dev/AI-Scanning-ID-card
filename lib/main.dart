@@ -6,9 +6,8 @@ import 'package:responsive_framework/responsive_framework.dart';
 
 import 'features/auth/data/auth_service.dart';
 import 'features/auth/presentation/pages/login_page.dart';
-import 'features/cart/presentation/bloc/cart_bloc.dart';
+import 'features/customers/presentation/bloc/customer_cubit.dart';
 import 'features/main/presentation/pages/main_page.dart';
-import 'features/products/presentation/bloc/product_bloc.dart';
 import 'features/users/presentation/bloc/user_bloc.dart';
 import 'injection_container.dart' as di;
 
@@ -18,6 +17,8 @@ void main() async {
   runApp(const MyApp());
 }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -26,42 +27,38 @@ class MyApp extends StatelessWidget {
     final authService = di.sl<AuthService>();
     final isLoggedIn = authService.isLoggedIn();
 
-    return MaterialApp(
-      title: 'Masterpro Ghi Đơn',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.getTheme(),
-      home: isLoggedIn
-          ? MultiBlocProvider(
-              providers: [
-                // Cart Bloc - Singleton to maintain state across app
-                BlocProvider<CartBloc>(
-                  create: (context) => di.sl<CartBloc>(),
-                ),
-                // Product Bloc
-                BlocProvider<ProductBloc>(
-                  create: (context) =>
-                      di.sl<ProductBloc>()..add(const GetProductsEvent()),
-                ),
-                // User Bloc
-                BlocProvider<UserBloc>(
-                  create: (context) => di.sl<UserBloc>(),
-                ),
-              ],
-              child: const MainPage(),
-            )
-          : LoginPage(authService: authService),
-      builder: (context, child) {
-        ScreenUtils.init(context);
-        return ResponsiveBreakpoints.builder(
-          breakpoints: [
-            const Breakpoint(start: 0, end: 450, name: MOBILE),
-            const Breakpoint(start: 451, end: 800, name: TABLET),
-            const Breakpoint(start: 801, end: 1920, name: DESKTOP),
-            const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
-          ],
-          child: child!,
-        );
-      },
+    return MultiBlocProvider(
+      providers: [
+        // User Bloc
+        BlocProvider<UserBloc>(
+          create: (context) => di.sl<UserBloc>(),
+        ),
+        // Customer Cubit
+        BlocProvider<CustomerCubit>(
+          create: (context) => di.sl<CustomerCubit>()..loadCustomers(),
+        ),
+      ],
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        title: 'MasterPro AI Scan ID',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.getTheme(),
+        home: isLoggedIn
+            ? const CustomersPage()
+            : LoginPage(authService: authService),
+        builder: (context, child) {
+          ScreenUtils.init(context);
+          return ResponsiveBreakpoints.builder(
+            child: ClampingScrollWrapper.builder(context, child!),
+            breakpoints: [
+              const Breakpoint(start: 0, end: 450, name: MOBILE),
+              const Breakpoint(start: 451, end: 800, name: TABLET),
+              const Breakpoint(start: 801, end: 1920, name: DESKTOP),
+              const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
+            ],
+          );
+        },
+      ),
     );
   }
 }

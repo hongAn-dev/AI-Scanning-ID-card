@@ -1,7 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/auth/data/auth_service.dart';
+import '../../features/auth/presentation/pages/login_page.dart';
 import '../../injection_container.dart' as di;
+import '../../main.dart';
 import '../constants/api_constants.dart';
 
 class DioClient {
@@ -38,6 +42,22 @@ class DioClient {
               }
             }
             return handler.next(options);
+          },
+          onError: (DioException err, ErrorInterceptorHandler handler) async {
+            if (err.response?.statusCode == 401) {
+              // 1. Clear Token
+              final prefs = di.sl<SharedPreferences>();
+              await prefs.remove('access_token');
+
+              // 2. Navigate to Login
+              navigatorKey.currentState?.pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => LoginPage(authService: di.sl<AuthService>()),
+                ),
+                (route) => false,
+              );
+            }
+            return handler.next(err);
           },
         ),
       );

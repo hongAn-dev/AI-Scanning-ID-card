@@ -1,203 +1,138 @@
-import 'package:dio/dio.dart';
-
 import '../../../../core/constants/api_constants.dart';
-import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/dio_client.dart';
-import '../models/customer_model.dart';
-import '../models/customer_remote_model.dart';
+import 'dart:convert';
 
-abstract class CustomerRemoteDataSource {
-  /// Calls the api/Category/CustomerList endpoint
-  ///
-  /// Throws a [ServerException] for all error codes.
-  Future<List<CustomerModel>> getCustomers({
-    String searchText = '',
-    String? email,
-    String? groupId,
-    int pageIndex = 0,
-    int pageSize = 20,
-  });
-
-  /// Calls the api/Category/CustomerGroupList endpoint
-  ///
-  /// Throws a [ServerException] for all error codes.
-  Future<List<CustomerGroupModel>> getCustomerGroups();
-
-  /// Calls the api/Category/GetNewCustomerCode endpoint
-  ///
-  /// Throws a [ServerException] for all error codes.
-  Future<String> getNewCustomerCode();
-
-  /// Calls the api/Category/AddNewCustomer endpoint
-  ///
-  /// Throws a [ServerException] for all error codes.
-  Future<CustomerModel> addNewCustomer({
-    required String fullname,
-    required String mobile,
-    required String address,
-    String? groupId,
-    String? note,
-  });
-}
-
-class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
+class CustomerRemoteDataSourceImpl {
   final DioClient dioClient;
-
   CustomerRemoteDataSourceImpl({required this.dioClient});
 
-  @override
-  Future<List<CustomerModel>> getCustomers({
-    String searchText = '',
-    String? email,
-    String? groupId,
+  Future<List<Map<String, dynamic>>> fetchCustomers({
     int pageIndex = 0,
     int pageSize = 20,
+    String searchText = "",
+    String locationId = "",
   }) async {
-    final Map<String, dynamic> body = {
-      'SearchText': searchText,
-      'Email': email ?? '',
-      'ObjectGroupId': groupId ?? '',
-      'ObjectType': 0,
-      'Status': false,
-      'PageIndex': pageIndex,
-      'PageSize': pageSize
-    };
-
     try {
+      print("🚀 Fetching customers from: ${ApiConstants.customersEndpoint}");
       final response = await dioClient.post(
-        '${ApiConstants.baseUrl}${ApiConstants.customersEndpoint}',
-        data: body,
+        ApiConstants.customersEndpoint,
+        data: {
+          "SearchText": searchText,
+          "Email": "",
+          "ObjectGroupId": "",
+          "ObjectType": -1, // Get All Types
+          "Status": false,
+          "PageIndex": pageIndex,
+          "PageSize": pageSize,
+          "LocationId": locationId
+        },
       );
 
-      if (response.statusCode == 200) {
-        final customerResponse = CustomerResponseModel.fromJson(response.data);
+      print("✅ Response Code: ${response.statusCode}");
+      print("Response Data: ${response.data}");
 
-        if (customerResponse.meta.statusCode == 0) {
-          return customerResponse.data
-              .map((remoteModel) => remoteModel.toCustomerModel())
-              .toList();
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data['data'];
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
         } else {
-          throw ServerException(customerResponse.meta.message);
+          print("⚠️ Data is not a List: $data");
         }
       } else {
-        throw ServerException('Failed to load customers');
+        print("❌ Request failed or data null");
       }
-    } on DioException catch (e) {
-      throw ServerException(e.message ?? 'Failed to load customers');
+      return [];
     } catch (e) {
-      throw ServerException(e.toString());
+      print("❌ Error fetching customers: $e");
+      return [];
     }
   }
 
-  @override
-  Future<List<CustomerGroupModel>> getCustomerGroups() async {
+  Future<List<Map<String, dynamic>>> fetchCustomerGroups() async {
     try {
+      print(
+          "🚀 Fetching customer groups from: ${ApiConstants.customerGroupsEndpoint}");
       final response = await dioClient.get(
         ApiConstants.customerGroupsEndpoint,
       );
 
-      if (response.statusCode == 200) {
-        final groupResponse =
-            CustomerGroupResponseModel.fromJson(response.data);
-
-        if (groupResponse.meta.statusCode == 0) {
-          return groupResponse.data
-              .map((remoteModel) => remoteModel.toCustomerGroupModel())
-              .toList();
-        } else {
-          throw ServerException(groupResponse.meta.message);
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data['data'];
+        if (data is List) {
+          print("✅ Loaded ${data.length} groups");
+          return List<Map<String, dynamic>>.from(data);
         }
-      } else {
-        throw ServerException('Failed to load customer groups');
       }
-    } on DioException catch (e) {
-      throw ServerException(e.message ?? 'Failed to load customer groups');
+      return [];
     } catch (e) {
-      throw ServerException(e.toString());
+      print("❌ Error fetching customer groups: $e");
+      return [];
     }
   }
 
-  @override
-  Future<String> getNewCustomerCode() async {
+  Future<bool> addNewCustomer(Map<String, dynamic> customerBody) async {
     try {
-      final response = await dioClient.get(
-        ApiConstants.getNewCustomerCodeEndpoint,
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data['data'] != null && data['data']['NewCode'] != null) {
-          return data['data']['NewCode'] as String;
-        } else {
-          throw ServerException('Failed to get new customer code');
-        }
-      } else {
-        throw ServerException('Failed to get new customer code');
-      }
-    } on DioException catch (e) {
-      throw ServerException(e.message ?? 'Failed to get new customer code');
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
-  }
-
-  @override
-  Future<CustomerModel> addNewCustomer({
-    required String fullname,
-    required String mobile,
-    required String address,
-    String? groupId,
-    String? note,
-  }) async {
-    try {
-      // First, get the new customer code
-      final code = await getNewCustomerCode();
-
-      // Prepare request body
-      final Map<String, dynamic> body = {
-        'CustomerCode': code,
-        'CustomerName': fullname,
-        'BirthDay': DateTime.now().toIso8601String(),
-        'GroupId': groupId ?? '',
-        'Address': address,
-        'Tel': mobile,
-        'Email': '',
-        'Description': note ?? '',
-        'Avatar': '',
-        'TaxCode': '',
-        'Longitude': 0,
-        'Latitude': 0,
-        'Password': '1',
-      };
-
-      // Call add customer API
       final response = await dioClient.post(
-        ApiConstants.addNewCustomerEndpoint,
-        data: body,
+        ApiConstants.addNewCustomerByCCCDEndpoint,
+        data: customerBody,
       );
 
       if (response.statusCode == 200) {
         final data = response.data;
-
-        if (data['meta'] != null && data['meta']['status_code'] == 0) {
-          if (data['data'] != null) {
-            final customerRemote = CustomerRemoteModel.fromJson(data['data']);
-            return customerRemote.toCustomerModel();
-          } else {
-            throw ServerException('No customer data returned');
+        if (data != null &&
+            data['data'] != null &&
+            data['data']['Result'] != null) {
+          final result = data['data']['Result'].toString();
+          if (result.contains("Could not find stored procedure")) {
+            throw Exception("Server Error: $result");
           }
-        } else {
-          throw ServerException(
-            data['meta']?['message'] ?? 'Failed to add customer',
-          );
         }
-      } else {
-        throw ServerException('Failed to add customer');
+        return true;
       }
-    } on DioException catch (e) {
-      throw ServerException(e.message ?? 'Failed to add customer');
+      return false;
     } catch (e) {
-      throw ServerException(e.toString());
+      print("Error adding customer: $e");
+      rethrow;
+    }
+  }
+
+  Future<bool> updateCustomer(Map<String, dynamic> customerBody) async {
+    try {
+      print("🚀 Updating customer...");
+      print("   -> Endpoint: ${ApiConstants.updateCustomerEndpoint}");
+      print("   -> Body: ${jsonEncode(customerBody)}");
+
+      final response = await dioClient.post(
+        ApiConstants.updateCustomerEndpoint,
+        data: customerBody,
+      );
+
+      print("   -> Response Status: ${response.statusCode}");
+      print("   -> Response Data: ${response.data}");
+
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print("❌ Error updating customer: $e");
+      rethrow;
+    }
+  }
+
+  Future<bool> deleteCustomer(String id) async {
+    try {
+      final response = await dioClient.post(
+        ApiConstants.deleteCustomerEndpoint,
+        data: {"ObjectId": id},
+      );
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print("Error deleting customer: $e");
+      rethrow;
     }
   }
 }
