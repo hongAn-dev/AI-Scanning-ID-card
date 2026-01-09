@@ -1,4 +1,3 @@
-```
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -343,9 +342,34 @@ class _ScanCccdPageState extends State<ScanCccdPage>
 
       if (result['success'] == true) {
         final data = result['data'] as Map<String, String>;
-        _collectedData.addAll(data);
+
+        // [MODIFIED] Smart Merge logic tương tự _captureAndProcess
+        if (_isFrontSide || _scanType == ScanType.passport) {
+          _collectedData.addAll(data);
+        } else {
+          // Mặt sau: Chỉ update các trường còn thiếu hoặc đặc thù mặt sau
+          if (data.containsKey('issueDate') && data['issueDate']!.isNotEmpty) {
+            _collectedData['issueDate'] = data['issueDate']!;
+          }
+          if (data.containsKey('mrz')) {
+            _collectedData['mrz'] = data['mrz']!;
+          }
+
+          // Chỉ ghi đè quê quán/thường trú nếu chưa tìm thấy ở mặt trước
+          if (data.containsKey('hometown') &&
+              data['hometown']!.isNotEmpty &&
+              (_collectedData['hometown']?.isEmpty ?? true)) {
+            _collectedData['hometown'] = data['hometown']!;
+          }
+          if (data.containsKey('residence') &&
+              data['residence']!.isNotEmpty &&
+              (_collectedData['residence']?.isEmpty ?? true)) {
+            _collectedData['residence'] = data['residence']!;
+          }
+        }
 
         // Với ảnh thư viện, ta coi như là quét xong 1 mặt luôn
+
         setState(() {
           if (_isFrontSide) {
             _frontImagePath = imageFile.path;
