@@ -12,6 +12,8 @@ import 'features/main/presentation/pages/main_page.dart';
 import 'features/users/presentation/bloc/user_bloc.dart';
 import 'injection_container.dart' as di;
 
+import 'features/intro/presentation/pages/splash_page.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await di.init();
@@ -25,9 +27,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authService = di.sl<AuthService>();
-    final isLoggedIn = authService.isLoggedIn();
-
+    // Auth check moved to SplashPage
     return MultiBlocProvider(
       providers: [
         // User Bloc
@@ -52,9 +52,7 @@ class MyApp extends StatelessWidget {
         supportedLocales: const [
           Locale('vi', 'VN'),
         ],
-        home: isLoggedIn
-            ? const CustomersPage()
-            : LoginPage(authService: authService),
+        home: const SplashPage(), // Start with Custom Splash
         builder: (context, child) {
           ScreenUtils.init(context);
           return ResponsiveBreakpoints.builder(
