@@ -227,7 +227,7 @@ class _LoginPageState extends State<LoginPage> {
                         // so pinned bottom is key. keeping logo is fine effectively.
                         // --- Logo (Animated) ---
                         AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
+                          duration: const Duration(milliseconds: 50),
                           curve: Curves.easeOutCubic,
                           width: isKeyboardVisible ? 150 : 500,
                           height: isKeyboardVisible ? 60 : 200,

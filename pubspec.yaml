@@ -107,10 +107,10 @@ dev_dependencies:
 
 flutter_native_splash:
   color: "#1B3B68"
-  image: "assets/icon_optimized.png"
-  android_12:
-    image: "assets/icon_optimized.png"
-    icon_background_color: "#1B3B68"
+  # image: "assets/icon_optimized.png"
+  # android_12:
+  #   image: "assets/icon_optimized.png"
+  #   icon_background_color: "#1B3B68"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
