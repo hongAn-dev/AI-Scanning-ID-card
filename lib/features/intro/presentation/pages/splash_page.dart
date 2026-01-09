@@ -19,7 +19,6 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
@@ -29,12 +28,9 @@ class _SplashPageState extends State<SplashPage>
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5)),
+    // Zoom Effect: Start small (native size approx) -> Grow Big
+    _scaleAnimation = Tween<double>(begin: 0.4, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutExpo),
     );
 
     _controller.forward();
@@ -88,12 +84,9 @@ class _SplashPageState extends State<SplashPage>
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            return Opacity(
-              opacity: _opacityAnimation.value,
-              child: Transform.scale(
-                scale: _scaleAnimation.value,
-                child: child,
-              ),
+            return Transform.scale(
+              scale: _scaleAnimation.value,
+              child: child,
             );
           },
           child: SizedBox(
