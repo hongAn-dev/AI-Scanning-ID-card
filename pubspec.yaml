@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -56,7 +58,7 @@ dependencies:
   
   # Service Locator
   get_it: ^7.6.4
-  intl: ^0.18.1
+  intl: any
   
   # Local Database
   sqflite: ^2.3.0
@@ -157,17 +159,17 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/unnamed-removebg-preview.png"
+  image_path: "assets/icon_optimized.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   adaptive_icon_background: "#FFFFFF" # Set white background for adaptive icons
   web:
     generate: true
-    image_path: "assets/unnamed-removebg-preview.png"
+    image_path: "assets/icon_optimized.png"
     background_color: "#FFFFFF"
     theme_color: "#1B3B68"
   windows:
     generate: true
-    image_path: "assets/unnamed-removebg-preview.png"
+    image_path: "assets/icon_optimized.png"
     icon_size: 48 # min:48, max:256, default: 48
   macos:
     generate: true

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:masterpro_ghidon/core/theme/app_theme.dart';
 import 'package:masterpro_ghidon/utils/screen_utils.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -43,6 +44,14 @@ class MyApp extends StatelessWidget {
         title: 'MasterPro AI Scan ID',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.getTheme(),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('vi', 'VN'),
+        ],
         home: isLoggedIn
             ? const CustomersPage()
             : LoginPage(authService: authService),
