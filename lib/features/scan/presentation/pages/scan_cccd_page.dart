@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 // [QUAN TRỌNG] Đảm bảo import đúng đường dẫn 2 file này
 import '../../data/scan_function.dart';
@@ -46,32 +47,62 @@ class _ScanCccdPageState extends State<ScanCccdPage>
   }
 
   Future<void> _initializeCamera() async {
+    debugPrint("📷 Bắt đầu khởi tạo Camera...");
     try {
-      final cameras = await availableCameras();
-      if (cameras.isNotEmpty) {
-        final backCam = cameras.firstWhere(
-            (c) => c.lensDirection == CameraLensDirection.back,
-            orElse: () => cameras.first);
+      // 1. Xin quyền Camera trước
+      var status = await Permission.camera.request();
+      debugPrint("📷 Trạng thái quyền Camera: $status");
 
-        _cameraController = CameraController(
-          backCam,
-          ResolutionPreset.high, // Dùng độ phân giải cao để detect mặt tốt hơn
-          enableAudio: false,
-          imageFormatGroup: Platform.isAndroid
-              ? ImageFormatGroup.nv21
-              : ImageFormatGroup.bgra8888,
-        );
-
-        await _cameraController!.initialize();
-        await _cameraController!
-            .setFocusMode(FocusMode.auto); // Để tự động lấy nét (Continuous AF)
-
-        if (mounted) {
-          setState(() => _isCameraInitialized = true);
-        }
+      if (!status.isGranted) {
+        if (mounted)
+          _showMessage(
+              "Bạn cần cấp quyền Camera để sử dụng tính năng này", Colors.red);
+        return;
       }
-    } catch (e) {
-      debugPrint('Lỗi camera: $e');
+
+      // 2. Lấy danh sách camera
+      final cameras = await availableCameras();
+      debugPrint("📷 Tìm thấy ${cameras.length} camera");
+
+      if (cameras.isEmpty) {
+        if (mounted)
+          _showMessage(
+              "Không tìm thấy camera (Nếu chạy trên Simulator, vui lòng dùng máy thật)",
+              Colors.orange);
+        return;
+      }
+
+      final backCam = cameras.firstWhere(
+          (c) => c.lensDirection == CameraLensDirection.back,
+          orElse: () => cameras.first);
+
+      debugPrint(
+          "📷 Đã chọn camera: ${backCam.name} - ${backCam.lensDirection}");
+
+      _cameraController = CameraController(
+        backCam,
+        ResolutionPreset.high,
+        enableAudio: false,
+        imageFormatGroup: Platform.isAndroid
+            ? ImageFormatGroup.nv21
+            : ImageFormatGroup.bgra8888,
+      );
+
+      debugPrint("📷 Đang gọi controller.initialize()...");
+      await _cameraController!.initialize();
+      debugPrint("📷 initialize() xong. Đang set focus mode...");
+
+      await _cameraController!.setFocusMode(FocusMode.auto);
+      debugPrint("📷 Set focus mode xong.");
+
+      if (mounted) {
+        setState(() => _isCameraInitialized = true);
+        debugPrint("📷 State đã update: _isCameraInitialized = true");
+      }
+    } catch (e, stackTrace) {
+      debugPrint('📷 ❌ Lỗi khởi tạo camera: $e');
+      debugPrint('📷 ❌ StackTrace: $stackTrace');
+      if (mounted) _showMessage("Không thể khởi tạo Camera: $e", Colors.red);
     }
   }
 

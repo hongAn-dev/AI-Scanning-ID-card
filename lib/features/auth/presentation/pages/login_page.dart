@@ -225,27 +225,25 @@ class _LoginPageState extends State<LoginPage> {
                         // Hide Logo if keyboard is open to give more space on small screens
                         // or just keep it if space permits. User asked to "push button up",
                         // so pinned bottom is key. keeping logo is fine effectively.
-                        if (!isKeyboardVisible)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(24),
+                        // --- Logo (Animated) ---
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          width: isKeyboardVisible ? 150 : 500,
+                          height: isKeyboardVisible ? 60 : 200,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                                isKeyboardVisible ? 12 : 24),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                                isKeyboardVisible ? 12 : 24),
                             child: Image.asset(
                               'assets/unnamed-removebg-preview.png',
-                              width: 500,
-                              height: 200,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        else
-                          // Smaller logo or just text when keyboard is open
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.asset(
-                              'assets/unnamed-removebg-preview.png',
-                              width: 150,
-                              height: 60,
                               fit: BoxFit.cover,
                             ),
                           ),
+                        ),
 
                         const SizedBox(height: 20),
 
