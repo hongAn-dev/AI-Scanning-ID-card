@@ -45,6 +45,20 @@
 		<true/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>Ứng dụng cần quyền truy cập camera để quét mã CCCD và Hộ chiếu.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Ứng dụng cần quyền truy cập microphone (nếu quay xe).</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Ứng dụng cần quyền truy cập thư viện ảnh để chọn ảnh giấy tờ.</string>
+		<key>NFCReaderUsageDescription</key>
+		<string>Ứng dụng cần quyền truy cập NFC để quét chip trên thẻ CCCD và Hộ chiếu.</string>
+		<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+		<array>
+			<string>A0000002471001</string>
+			<string>A0000002472001</string>
+			<string>00000000000000</string>
+		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
 	</dict>
