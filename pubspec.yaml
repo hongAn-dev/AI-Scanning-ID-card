@@ -156,13 +156,15 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
+  remove_alpha_ios: true
   image_path: "assets/unnamed-removebg-preview.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
+  adaptive_icon_background: "#FFFFFF" # Set white background for adaptive icons
   web:
     generate: true
     image_path: "assets/unnamed-removebg-preview.png"
-    background_color: "#hexcode"
-    theme_color: "#hexcode"
+    background_color: "#FFFFFF"
+    theme_color: "#1B3B68"
   windows:
     generate: true
     image_path: "assets/unnamed-removebg-preview.png"

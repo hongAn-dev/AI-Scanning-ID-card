@@ -125,11 +125,34 @@ class _CccdDetailsPageState extends State<CccdDetailsPage> {
   String _formatDate(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
+  // --- DATE PICKER HELPER ---
+  Future<void> _selectDate(BuildContext context, DateTime initialDate,
+      Function(DateTime) onPicked) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+      locale:
+          const Locale('vi', 'VN'), // Requires initialization supportedLocales
+    );
+    if (picked != null && picked != initialDate) {
+      setState(() {
+        onPicked(picked);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Logic kiểm tra ảnh avatar cắt
     bool hasCroppedAvatar = widget.scannedData['avatarPath'] != null &&
         File(widget.scannedData['avatarPath']!).existsSync();
+
+    // [MODIFIED] Determine Mode
+    bool isAddNew = widget.scannedData.isEmpty ||
+        (widget.scannedData['id'] == null &&
+            widget.scannedData['customerId'] == null);
 
     return BlocListener<CustomerCubit, CustomerState>(
       listener: (context, state) {
@@ -173,9 +196,11 @@ class _CccdDetailsPageState extends State<CccdDetailsPage> {
             icon: const Icon(Icons.arrow_back, color: Colors.black),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: const Text(
-            'Chi tiết khách hàng',
-            style: TextStyle(
+          title: Text(
+            isAddNew
+                ? 'Thêm khách hàng mới'
+                : 'Chi tiết khách hàng', // [MODIFIED]
+            style: const TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
               fontSize: 18,
@@ -323,7 +348,11 @@ class _CccdDetailsPageState extends State<CccdDetailsPage> {
                       children: [
                         _buildLabel('Ngày sinh'),
                         _buildDateField(
-                            value: _formatDate(_dob), icon: Icons.cake),
+                            // [MODIFIED]
+                            value: _formatDate(_dob),
+                            icon: Icons.cake,
+                            onTap: () => _selectDate(
+                                context, _dob, (date) => _dob = date)),
                       ],
                     ),
                   ),
@@ -365,8 +394,11 @@ class _CccdDetailsPageState extends State<CccdDetailsPage> {
                       children: [
                         _buildLabel('Ngày cấp'),
                         _buildDateField(
+                            // [MODIFIED]
                             value: _formatDate(_issueDate),
-                            icon: Icons.date_range),
+                            icon: Icons.date_range,
+                            onTap: () => _selectDate(context, _issueDate,
+                                (date) => _issueDate = date)),
                       ],
                     ),
                   ),
@@ -376,8 +408,11 @@ class _CccdDetailsPageState extends State<CccdDetailsPage> {
                       children: [
                         _buildLabel('Có giá trị đến'),
                         _buildDateField(
+                            // [MODIFIED]
                             value: _formatDate(_expiryDate),
-                            icon: Icons.event_busy),
+                            icon: Icons.event_busy,
+                            onTap: () => _selectDate(context, _expiryDate,
+                                (date) => _expiryDate = date)),
                       ],
                     ),
                   ),
@@ -609,25 +644,31 @@ class _CccdDetailsPageState extends State<CccdDetailsPage> {
     );
   }
 
-  Widget _buildDateField({required String value, required IconData icon}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.grey, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16, color: Colors.black87),
-              overflow: TextOverflow.ellipsis,
+  // [MODIFIED] Added onTap
+  Widget _buildDateField(
+      {required String value, required IconData icon, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.grey, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                value,
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
