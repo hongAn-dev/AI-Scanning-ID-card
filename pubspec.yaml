@@ -158,7 +158,6 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  icon_size: 48
   remove_alpha_ios: true
   image_path: "assets/icon_optimized.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
