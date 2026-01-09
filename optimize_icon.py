@@ -20,19 +20,25 @@ def crop_transparency(path, out_path):
         # GetBoundingBox returns box of non-zero regions
         bbox = img.getbbox()
         if bbox:
+            print(f"Original Size: {img.size}")
+            print(f"Cropping to Valid Area: {bbox}")
             cropped = img.crop(bbox)
-            # Add a small padding (optional, but good for Apple icons not to touch edge)
-            # Actually user wants "Zoom 200%", so NO padding is best to fill the square.
+            
+            # Save
             cropped.save(out_path, "PNG")
-            print(f"Successfully cropped {path} to {out_path}")
+            print(f"Successfully cropped {path} to {out_path} (Size: {cropped.size})")
         else:
             print("Image is fully transparent!")
     except Exception as e:
         print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     input_path = os.path.join("assets", "unnamed-removebg-preview.png")
     output_path = os.path.join("assets", "icon_optimized.png")
+    
+    print(f"Processing: {os.path.abspath(input_path)}")
     
     # Check if PIL is installed, if not try simple copy or warn
     try:
