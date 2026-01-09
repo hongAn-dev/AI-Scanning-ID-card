@@ -16,6 +16,28 @@ class AppTheme {
           onSurfaceVariant: AppColors.text,
           surface: AppColors.white,
           onSurface: AppColors.text,
+        ), // End ColorScheme
+        datePickerTheme: DatePickerThemeData(
+          headerBackgroundColor: AppColors.white,
+          headerForegroundColor: AppColors.text,
+          backgroundColor: AppColors.white,
+          surfaceTintColor: Colors.transparent,
+          // Colors for the days
+          dayForegroundColor: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return AppColors.text; // Text remains black
+            }
+            return AppColors.text;
+          }),
+          dayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              // Glassy effect: Low opacity black (or primary)
+              return Colors.black.withOpacity(0.1);
+            }
+            return Colors.transparent;
+          }),
+          todayForegroundColor: MaterialStateProperty.all(AppColors.red),
+          todayBackgroundColor: MaterialStateProperty.all(Colors.transparent),
         ),
         textTheme: const TextTheme(
           bodySmall: TextStyle(

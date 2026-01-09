@@ -143,6 +143,16 @@ class _CccdDetailsPageState extends State<CccdDetailsPage> {
     }
   }
 
+  void _showMessage(String msg, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Logic kiểm tra ảnh avatar cắt
@@ -426,6 +436,81 @@ class _CccdDetailsPageState extends State<CccdDetailsPage> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
+                    // --- VALIDATION START ---
+                    // 1. Check Location
+                    if (_selectedLocationId == null) {
+                      _showMessage(
+                          "Vui lòng chọn Chi nhánh quản lý!", AppColors.red);
+                      return;
+                    }
+
+                    // 2. Check Name
+                    final name = _nameCtrl.text.trim();
+                    if (name.isEmpty) {
+                      _showMessage("Vui lòng nhập Họ và tên!", AppColors.red);
+                      return;
+                    }
+                    if (name.length < 2) {
+                      _showMessage("Họ tên quá ngắn!", AppColors.red);
+                      return;
+                    }
+
+                    // 3. Check CCCD
+                    final cccd = _cccdCtrl.text.trim();
+                    if (cccd.isEmpty) {
+                      _showMessage(
+                          "Vui lòng nhập Số CCCD/CMND!", AppColors.red);
+                      return;
+                    }
+                    if (!RegExp(r'^\d+$').hasMatch(cccd)) {
+                      _showMessage(
+                          "Số CCCD chỉ được chứa chữ số!", AppColors.red);
+                      return;
+                    }
+                    if (cccd.length != 9 && cccd.length != 12) {
+                      _showMessage(
+                          "Số CCCD phải có 9 hoặc 12 chữ số!", AppColors.red);
+                      return;
+                    }
+
+                    // 4. Check Dates
+                    final now = DateTime.now();
+
+                    // Tuổi (Ví dụ: Phải >= 14 hoặc 15 tuổi để làm CCCD)
+                    final age = now.year - _dob.year;
+                    if (age < 14) {
+                      _showMessage(
+                          "Người lao động/Khách hàng phải từ 14 tuổi trở lên!",
+                          AppColors.red);
+                      return;
+                    }
+
+                    if (_issueDate.isAfter(now)) {
+                      _showMessage(
+                          "Ngày cấp không hợp lệ (Tương lai)!", AppColors.red);
+                      return;
+                    }
+
+                    if (_expiryDate.isBefore(_issueDate)) {
+                      _showMessage(
+                          "Ngày hết hạn phải sau Ngày cấp!", AppColors.red);
+                      return;
+                    }
+
+                    if (_expiryDate.isBefore(now)) {
+                      // Cảnh báo nhưng vẫn cho phép (chỉ nhắc nhở)
+                      // Hoặc chặn luôn tuỳ nghiệp vụ. Ở đây chỉ show warning toast nếu cần, hoặc bỏ qua.
+                      // _showMessage("Cảnh báo: CCCD đã hết hạn!", Colors.orange);
+                    }
+
+                    // 5. Check Hometown / Residence (Optional but recommended)
+                    if (_originCtrl.text.trim().isEmpty) {
+                      _showMessage("Vui lòng nhập Quê quán!", AppColors.red);
+                      return;
+                    }
+
+                    // --- VALIDATION END ---
+
                     final cubit = context.read<CustomerCubit>();
                     final customerId = widget.scannedData['customerId'];
                     final bool isEditing =
@@ -435,13 +520,13 @@ class _CccdDetailsPageState extends State<CccdDetailsPage> {
                       id: isEditing
                           ? customerId
                           : DateTime.now().millisecondsSinceEpoch.toString(),
-                      name: _nameCtrl.text,
-                      identityNumber: _cccdCtrl.text,
+                      name: name, // Was trimmed above
+                      identityNumber: cccd, // Was trimmed above
                       dob: _dob,
                       gender: _gender,
-                      nationality: _nationalityCtrl.text,
-                      hometown: _originCtrl.text,
-                      address: _residenceCtrl.text,
+                      nationality: _nationalityCtrl.text.trim(),
+                      hometown: _originCtrl.text.trim(),
+                      address: _residenceCtrl.text.trim(),
                       issueDate: _issueDate,
                       expiryDate: _expiryDate,
                       avatarPath: widget.scannedData['avatarPath'] ??
