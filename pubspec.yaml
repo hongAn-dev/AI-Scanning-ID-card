@@ -107,9 +107,9 @@ dev_dependencies:
 
 flutter_native_splash:
   color: "#1B3B68"
-  image: "assets/icon_optimized.png"
+  image: "assets/transparent.png"
   android_12:
-    image: "assets/icon_optimized.png"
+    image: "assets/transparent.png"
     icon_background_color: "#1B3B68"
 
 # For information on the generic Dart part of this file, see the
@@ -158,6 +158,7 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
+  icon_size: 48
   remove_alpha_ios: true
   image_path: "assets/icon_optimized.png"
   min_sdk_android: 21 # android min sdk min:16, default 21

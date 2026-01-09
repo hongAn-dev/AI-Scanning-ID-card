@@ -24,13 +24,13 @@ class _SplashPageState extends State<SplashPage>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 2), // Total splash duration
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
-    // Zoom Effect: Start small (native size approx) -> Grow Big
-    _scaleAnimation = Tween<double>(begin: 0.4, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutExpo),
+    // Start BIG immediately. Slight pulse effect.
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
     _controller.forward();
@@ -39,8 +39,8 @@ class _SplashPageState extends State<SplashPage>
   }
 
   Future<void> _navigateNext() async {
-    // Wait for animation + artificial delay
-    await Future.delayed(const Duration(seconds: 2));
+    // Reduce delay. Total time = animation time largely.
+    await Future.delayed(const Duration(milliseconds: 1000));
 
     if (!mounted) return;
 
