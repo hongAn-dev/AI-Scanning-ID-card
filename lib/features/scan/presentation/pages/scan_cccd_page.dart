@@ -1,6 +1,9 @@
+```
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 // [QUAN TRỌNG] Đảm bảo import đúng đường dẫn 2 file này
@@ -17,7 +20,7 @@ class ScanCccdPage extends StatefulWidget {
 }
 
 class _ScanCccdPageState extends State<ScanCccdPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   bool _isFlashOn = false;
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
@@ -38,6 +41,8 @@ class _ScanCccdPageState extends State<ScanCccdPage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance
+        .addObserver(this); // [FIX] Quan sát vòng đời ứng dụng
     _initializeCamera();
 
     _animationController = AnimationController(
@@ -46,14 +51,55 @@ class _ScanCccdPageState extends State<ScanCccdPage>
     )..repeat(reverse: true);
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // [FIX] Xử lý khi app bị ẩn hoặc mở lại (Background/Foreground)
+    final CameraController? cameraController = _cameraController;
+
+    if (cameraController == null || !cameraController.value.isInitialized) {
+      return;
+    }
+
+    if (state == AppLifecycleState.inactive) {
+      // App bị ẩn -> Dừng camera
+      cameraController.dispose();
+    } else if (state == AppLifecycleState.resumed) {
+      // App mở lại -> Khởi tạo lại camera
+      _initializeCamera();
+    }
+  }
+
   Future<void> _initializeCamera() async {
     debugPrint("📷 Bắt đầu khởi tạo Camera...");
+    if (_cameraController != null) {
+      // Dispose cũ nếu có
+      await _cameraController!.dispose();
+    }
+
     try {
       // 1. Xin quyền Camera trước
       var status = await Permission.camera.request();
       debugPrint("📷 Trạng thái quyền Camera: $status");
 
       if (!status.isGranted) {
+        if (status.isPermanentlyDenied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text(
+                    'Bạn đã từ chối quyền Camera. Vui lòng bật trong Cài đặt.'),
+                action: SnackBarAction(
+                  label: 'Mở Cài đặt',
+                  onPressed: () => openAppSettings(),
+                ),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+          return;
+        }
+
         if (mounted)
           _showMessage(
               "Bạn cần cấp quyền Camera để sử dụng tính năng này", Colors.red);
@@ -83,9 +129,7 @@ class _ScanCccdPageState extends State<ScanCccdPage>
         backCam,
         ResolutionPreset.high,
         enableAudio: false,
-        imageFormatGroup: Platform.isAndroid
-            ? ImageFormatGroup.nv21
-            : ImageFormatGroup.bgra8888,
+        // [FIX] Bỏ imageFormatGroup trên iOS để tránh lỗi màn hình đen
       );
 
       debugPrint("📷 Đang gọi controller.initialize()...");
@@ -108,6 +152,7 @@ class _ScanCccdPageState extends State<ScanCccdPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // [FIX] Remove observer
     _animationController.dispose();
     _cameraController?.dispose();
     _scanService.dispose(); // Giải phóng Service
@@ -278,6 +323,78 @@ class _ScanCccdPageState extends State<ScanCccdPage>
     return _isFrontSide ? 'Mặt trước CCCD' : 'Mặt sau CCCD';
   }
 
+  // --- HÀM XỬ LÝ ẢNH TỪ THƯ VIỆN ---
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image == null) return;
+
+      setState(() => _isProcessing = true);
+
+      final imageFile = File(image.path);
+
+      // Gọi Service xử lý ảnh giống như chụp camera
+      final result =
+          await _scanService.processImage(imageFile, _isFrontSide, _scanType);
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        final data = result['data'] as Map<String, String>;
+        _collectedData.addAll(data);
+
+        // Với ảnh thư viện, ta coi như là quét xong 1 mặt luôn
+        setState(() {
+          if (_isFrontSide) {
+            _frontImagePath = imageFile.path;
+          } else {
+            _backImagePath = imageFile.path;
+          }
+          _isProcessing = false;
+        });
+
+        _showMessage("Đã tải ảnh thành công!", Colors.green);
+
+        // Logic điều hướng
+        if (_scanType == ScanType.passport || !_isFrontSide) {
+          _navigateToDetails();
+        } else {
+          _showMessage("Vui lòng tải tiếp mặt sau (nếu có)", Colors.blue);
+          Future.delayed(const Duration(seconds: 1), () {
+            if (mounted) setState(() => _isFrontSide = false);
+          });
+        }
+      } else {
+        throw Exception(result['error']);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        _showMessage("Lỗi xử lý ảnh: $e", Colors.red);
+      }
+    }
+  }
+
+  // --- HÀM NHẬP TAY ---
+  void _navigateToManualInput() {
+    _animationController.stop();
+    Navigator.of(context)
+        .push(
+      MaterialPageRoute(
+        builder: (_) => CccdDetailsPage(
+          frontImagePath: "", // Không có ảnh
+          backImagePath: "",
+          scannedData: {}, // Dữ liệu trống để nhập tay
+        ),
+      ),
+    )
+        .then((_) {
+      if (mounted) _animationController.repeat(reverse: true);
+    });
+  }
+
   // --- UI ---
   @override
   Widget build(BuildContext context) {
@@ -398,10 +515,10 @@ class _ScanCccdPageState extends State<ScanCccdPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         ScanSquareButton(
-                          icon: Icons.image_outlined,
+                          icon: Icons.photo_library_outlined,
                           iconColor: AppColors.red,
                           bgColor: AppColors.red.withOpacity(0.1),
-                          onTap: () {},
+                          onTap: _pickImageFromGallery,
                         ),
                         CaptureButton(
                           // Nút chụp chính
@@ -409,10 +526,10 @@ class _ScanCccdPageState extends State<ScanCccdPage>
                           isProcessing: _isProcessing,
                         ),
                         ScanSquareButton(
-                          icon: Icons.file_upload_outlined,
+                          icon: Icons.edit_note, // Icon nhập tay
                           iconColor: AppColors.red,
                           bgColor: AppColors.red.withOpacity(0.1),
-                          onTap: () {},
+                          onTap: _navigateToManualInput,
                         ),
                       ],
                     ),
