@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import 'package:masterpro_ghidon/core/network/network_info.dart';
-import 'package:masterpro_ghidon/features/customers/data/datasources/customer_remote_data_source.dart';
-import 'package:masterpro_ghidon/features/customers/data/repositories/customer_repository_impl.dart';
-import 'package:masterpro_ghidon/features/customers/domain/repositories/customer_repository.dart';
-import 'package:masterpro_ghidon/features/customers/domain/usecases/add_customer.dart';
-import 'package:masterpro_ghidon/features/customers/domain/usecases/get_customer_groups.dart';
-import 'package:masterpro_ghidon/features/customers/domain/usecases/get_customers.dart';
-import 'package:masterpro_ghidon/features/customers/presentation/bloc/customer_cubit.dart';
+import 'package:masterpro_ai_scan_id/core/network/network_info.dart';
+import 'package:masterpro_ai_scan_id/features/customers/data/datasources/customer_remote_data_source.dart';
+import 'package:masterpro_ai_scan_id/features/customers/data/repositories/customer_repository_impl.dart';
+import 'package:masterpro_ai_scan_id/features/customers/domain/repositories/customer_repository.dart';
+import 'package:masterpro_ai_scan_id/features/customers/domain/usecases/add_customer.dart';
+import 'package:masterpro_ai_scan_id/features/customers/domain/usecases/get_customer_groups.dart';
+import 'package:masterpro_ai_scan_id/features/customers/domain/usecases/get_customers.dart';
+import 'package:masterpro_ai_scan_id/features/customers/presentation/bloc/customer_cubit.dart';
 // Orders feature removed for customer-only app
 import 'package:shared_preferences/shared_preferences.dart';
 

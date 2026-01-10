@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:masterpro_ghidon/core/theme/app_colors.dart';
-import 'package:masterpro_ghidon/core/theme/app_fonts.dart';
+import 'package:masterpro_ai_scan_id/core/theme/app_colors.dart';
+import 'package:masterpro_ai_scan_id/core/theme/app_fonts.dart';
 
 class AppTheme {
   static ThemeData getTheme() {

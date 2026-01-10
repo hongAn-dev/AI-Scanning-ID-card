@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:masterpro_ghidon/core/theme/app_theme.dart';
-import 'package:masterpro_ghidon/utils/screen_utils.dart';
+import 'package:masterpro_ai_scan_id/core/theme/app_theme.dart';
+import 'package:masterpro_ai_scan_id/utils/screen_utils.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
 import 'features/auth/data/auth_service.dart';
