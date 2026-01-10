@@ -5,10 +5,7 @@ import 'package:masterpro_ai_scan_id/core/theme/app_theme.dart';
 import 'package:masterpro_ai_scan_id/utils/screen_utils.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
-import 'features/auth/data/auth_service.dart';
-import 'features/auth/presentation/pages/login_page.dart';
 import 'features/customers/presentation/bloc/customer_cubit.dart';
-import 'features/main/presentation/pages/main_page.dart';
 import 'features/users/presentation/bloc/user_bloc.dart';
 import 'injection_container.dart' as di;
 

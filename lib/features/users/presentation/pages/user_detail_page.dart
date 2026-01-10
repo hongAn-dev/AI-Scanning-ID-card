@@ -33,7 +33,8 @@ class UserDetailPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 64, color: AppColors.red),
+                  const Icon(Icons.error_outline,
+                      size: 64, color: AppColors.red),
                   const SizedBox(height: 16),
                   Text(
                     state.message,
@@ -44,8 +45,8 @@ class UserDetailPage extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: () {
                       context.read<UserBloc>().add(
-                        GetUserByIdEvent(id: userId),
-                      );
+                            GetUserByIdEvent(id: userId),
+                          );
                     },
                     icon: const Icon(Icons.refresh),
                     label: const Text('Retry'),
@@ -82,8 +83,8 @@ class UserDetailPage extends StatelessWidget {
                 Text(
                   user.name,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Text(

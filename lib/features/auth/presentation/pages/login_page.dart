@@ -200,7 +200,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     // Determine screen size for responsiveness
-    final size = MediaQuery.of(context).size;
+
     // Dark Navy Blue Background
     const backgroundColor = Color(0xFF1B3B68);
     // Check keyboard visibility
