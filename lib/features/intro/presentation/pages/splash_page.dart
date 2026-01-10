@@ -19,18 +19,22 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(seconds: 2), // Total splash duration
       vsync: this,
     );
 
-    // Start BIG immediately. Slight pulse effect.
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5)),
     );
 
     _controller.forward();
@@ -39,8 +43,8 @@ class _SplashPageState extends State<SplashPage>
   }
 
   Future<void> _navigateNext() async {
-    // Reduce delay. Total time = animation time largely.
-    await Future.delayed(const Duration(milliseconds: 1000));
+    // Wait for animation + artificial delay
+    await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
 
@@ -84,14 +88,17 @@ class _SplashPageState extends State<SplashPage>
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            return Transform.scale(
-              scale: _scaleAnimation.value,
-              child: child,
+            return Opacity(
+              opacity: _opacityAnimation.value,
+              child: Transform.scale(
+                scale: _scaleAnimation.value,
+                child: child,
+              ),
             );
           },
           child: SizedBox(
             width: 500, // Explicit big size
-            height: 200,
+            height: 500,
             child: Image.asset(
               'assets/unnamed-removebg-preview.png', // Use the original full quality one or optimized one
               fit: BoxFit.contain,
