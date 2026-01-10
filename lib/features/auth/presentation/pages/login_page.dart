@@ -23,14 +23,30 @@ class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  final _codeFocus = FocusNode();
+  final _userFocus = FocusNode();
+  final _passFocus = FocusNode();
+
   bool _rememberMe = false;
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _isKeyboardVisible = false;
 
   @override
   void initState() {
     super.initState();
     _loadSavedCredentials();
+    _codeFocus.addListener(_updateKeyboardStatus);
+    _userFocus.addListener(_updateKeyboardStatus);
+    _passFocus.addListener(_updateKeyboardStatus);
+  }
+
+  void _updateKeyboardStatus() {
+    final isFocused =
+        _codeFocus.hasFocus || _userFocus.hasFocus || _passFocus.hasFocus;
+    if (_isKeyboardVisible != isFocused) {
+      if (mounted) setState(() => _isKeyboardVisible = isFocused);
+    }
   }
 
   void _loadSavedCredentials() {
@@ -50,6 +66,14 @@ class _LoginPageState extends State<LoginPage> {
     _customerCodeController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
+
+    _codeFocus.removeListener(_updateKeyboardStatus);
+    _userFocus.removeListener(_updateKeyboardStatus);
+    _passFocus.removeListener(_updateKeyboardStatus);
+    _codeFocus.dispose();
+    _userFocus.dispose();
+    _passFocus.dispose();
+
     super.dispose();
   }
 
@@ -199,12 +223,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine screen size for responsiveness
-
     // Dark Navy Blue Background
     const backgroundColor = Color(0xFF1B3B68);
-    // Check keyboard visibility
-    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -221,23 +241,19 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // --- Logo ---
-                        // Hide Logo if keyboard is open to give more space on small screens
-                        // or just keep it if space permits. User asked to "push button up",
-                        // so pinned bottom is key. keeping logo is fine effectively.
                         // --- Logo (Animated) ---
                         AnimatedContainer(
-                          duration: const Duration(milliseconds: 50),
-                          curve: Curves.easeOutCubic,
-                          width: isKeyboardVisible ? 150 : 500,
-                          height: isKeyboardVisible ? 60 : 200,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOutQuad,
+                          width: _isKeyboardVisible ? 150 : 500,
+                          height: _isKeyboardVisible ? 60 : 200,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
-                                isKeyboardVisible ? 12 : 24),
+                                _isKeyboardVisible ? 12 : 24),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(
-                                isKeyboardVisible ? 12 : 24),
+                                _isKeyboardVisible ? 12 : 24),
                             child: Image.asset(
                               'assets/unnamed-removebg-preview.png',
                               fit: BoxFit.cover,
@@ -255,18 +271,21 @@ class _LoginPageState extends State<LoginPage> {
                             children: [
                               _buildModernTextField(
                                 controller: _customerCodeController,
+                                focusNode: _codeFocus,
                                 hint: 'Mã khách hàng',
                                 icon: Icons.store_mall_directory_outlined,
                               ),
                               const SizedBox(height: 16),
                               _buildModernTextField(
                                 controller: _usernameController,
+                                focusNode: _userFocus,
                                 hint: 'Tên đăng nhập',
                                 icon: Icons.person_outline,
                               ),
                               const SizedBox(height: 16),
                               _buildModernTextField(
                                 controller: _passwordController,
+                                focusNode: _passFocus,
                                 hint: 'Mật khẩu',
                                 icon: Icons.vpn_key_outlined,
                                 isPassword: true,
@@ -352,9 +371,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
-                    // Hide Footer when keyboard is visible to save space?
-                    // Or keep it. Let's keep it but minimize spacing.
-                    if (!isKeyboardVisible) ...[
+                    // Hide Footer when keyboard is visible
+                    if (!_isKeyboardVisible) ...[
                       const SizedBox(height: 24),
                       // --- Footer ---
                       Column(
@@ -398,6 +416,7 @@ class _LoginPageState extends State<LoginPage> {
     required TextEditingController controller,
     required String hint,
     required IconData icon,
+    FocusNode? focusNode, // [ADDED]
     bool isPassword = false,
   }) {
     return Container(
@@ -408,6 +427,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: TextFormField(
         controller: controller,
+        focusNode: focusNode, // [ADDED]
         obscureText: isPassword && _obscurePassword,
         style: const TextStyle(fontSize: 16, color: Colors.black87),
         decoration: InputDecoration(
