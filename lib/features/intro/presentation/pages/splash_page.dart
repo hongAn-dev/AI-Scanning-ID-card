@@ -97,10 +97,10 @@ class _SplashPageState extends State<SplashPage>
             );
           },
           child: SizedBox(
-            width: 500, // Explicit big size
-            height: 500,
+            width: 300, // Explicit big size
+            height: 300,
             child: Image.asset(
-              'assets/unnamed-removebg-preview.png', // Use the original full quality one or optimized one
+              'assets/unnamed-3emovebg-preview.png', // Use the original full quality one or optimized one
               fit: BoxFit.contain,
             ),
           ),
