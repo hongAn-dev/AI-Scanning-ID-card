@@ -11,6 +11,7 @@ import '../../../customers/domain/entities/customer_group.dart';
 import '../../../customers/domain/repositories/customer_repository.dart';
 import '../../../customers/presentation/bloc/customer_cubit.dart';
 import '../../../customers/presentation/bloc/customer_state.dart';
+import '../../../auth/data/auth_service.dart'; // [FIX] Import AuthService
 
 class CccdInputForm extends StatefulWidget {
   final String frontImagePath;
@@ -100,6 +101,9 @@ class _CccdInputFormState extends State<CccdInputForm> {
   Future<void> _loadLocations() async {
     setState(() => _isLoadingLocations = true);
     try {
+      // [DEMO MODE] Use real logic handling or empty, validation will be skipped.
+      // No need to inject fake branch.
+
       final customerRepo = di.sl<CustomerRepository>();
       final groups = await customerRepo.getCustomerGroups();
       final prefs = await SharedPreferences.getInstance();
@@ -281,12 +285,11 @@ class _CccdInputFormState extends State<CccdInputForm> {
             const SizedBox(height: 30),
 
             // --- LOCATION SELECTION ---
-            if (_isLoadingLocations)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 20),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (_locations.isNotEmpty) ...[
+            // [DEMO MODE] Hide logic moved to validation check.
+            // Hide UI if Demo or standard logic
+            if (!_isLoadingLocations &&
+                _locations.isNotEmpty &&
+                !di.sl<AuthService>().isDemoMode()) ...[
               _buildLabel('Chi nhánh quản lý'),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -416,8 +419,11 @@ class _CccdInputFormState extends State<CccdInputForm> {
               child: ElevatedButton(
                 onPressed: () async {
                   // --- VALIDATION START ---
+                  final isDemo = di.sl<AuthService>().isDemoMode();
+
                   // 1. Check Location
-                  if (_selectedLocationId == null) {
+                  // [DEMO_CHANGE] Tắt logic kiểm tra chi nhánh nếu là Demo
+                  if (!isDemo && _selectedLocationId == null) {
                     _showMessage(
                         "Vui lòng chọn Chi nhánh quản lý!", AppColors.red);
                     return;
