@@ -15,6 +15,7 @@ class AuthService {
   static const String _keyUserAccount = 'user_account';
   static const String _keyLocationId = 'location_id';
   static const String _keyLocationName = 'location_name';
+  static const String _keyIsDemo = 'is_demo';
 
   final SharedPreferences _prefs;
   final DioClient _dioClient;
@@ -105,8 +106,35 @@ class AuthService {
     }
   }
 
+  // --- DEMO MODE ---
+  Future<void> loginDemo() async {
+    // 1. Set Logged In
+    await _prefs.setBool(_keyIsLoggedIn, true);
+    await _prefs.setBool(_keyIsDemo, true);
+
+    // 2. Set Fake Token
+    await _prefs.setString(_keyAccessToken, "DEMO_TOKEN_123456");
+
+    // 3. Set Fake User Account
+    // Manual JSON construction to avoid Model constructor issues
+    const demoJson =
+        '{"Id": 9999, "UserName": "demo_user", "FullName": "Khách dùng thử", "Phone": "0912345678", "Email": "demo@example.com"}';
+    await _prefs.setString(_keyUserAccount, demoJson);
+
+    // 4. Set Default Location
+    await saveLocationId("0");
+    await saveLocationName("Chi nhánh Demo");
+
+    print('🚀 Login Demo Success');
+  }
+
+  bool isDemoMode() {
+    return _prefs.getBool(_keyIsDemo) ?? false;
+  }
+
   Future<void> logout() async {
     await _prefs.setBool(_keyIsLoggedIn, false);
+    await _prefs.remove(_keyIsDemo); // [FIX] Clear demo flag
     await _prefs.remove(_keyAccessToken);
     await _prefs.remove(_keyUserAccount);
 

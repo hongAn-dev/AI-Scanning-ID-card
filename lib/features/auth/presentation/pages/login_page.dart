@@ -221,6 +221,30 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _loginDemo() async {
+    setState(() => _isLoading = true);
+    // Simulate delay
+    await Future.delayed(const Duration(milliseconds: 500));
+    await widget.authService.loginDemo();
+    setState(() => _isLoading = false);
+
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider<UserBloc>(
+                create: (context) => di.sl<UserBloc>(),
+              ),
+            ],
+            child: const CustomersPage(),
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Dark Navy Blue Background
@@ -368,6 +392,17 @@ class _LoginPageState extends State<LoginPage> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: _isLoading ? null : _loginDemo,
+                      child: const Text(
+                        "Dùng thử tính năng (Demo)",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
 

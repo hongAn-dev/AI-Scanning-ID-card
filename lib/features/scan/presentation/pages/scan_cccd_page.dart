@@ -10,6 +10,8 @@ import '../../data/scan_function.dart';
 import '../widgets/ui_scan.dart';
 import 'cccd_details_page.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../injection_container.dart' as di;
+import '../../../auth/data/auth_service.dart';
 
 class ScanCccdPage extends StatefulWidget {
   const ScanCccdPage({super.key});
@@ -170,6 +172,68 @@ class _ScanCccdPageState extends State<ScanCccdPage>
       // 1. Chụp ảnh
       final imageXFile = await _cameraController!.takePicture();
       final imageFile = File(imageXFile.path);
+
+      // --- DEMO MODE CHECK ---
+      try {
+        if (di.sl.isRegistered<AuthService>()) {
+          final authService = di.sl<AuthService>();
+          if (authService.isDemoMode()) {
+            await Future.delayed(const Duration(seconds: 1)); // Fake processing
+
+            if (_isFrontSide) {
+              _collectedData.addAll({
+                "id": "001202029221",
+                "name": "NGUYỄN VĂN DEMO",
+                "dob": "01/01/1995",
+                "sex": "Nam",
+                "nationality": "Việt Nam",
+                "hometown": "Hoàn Kiếm, Hà Nội",
+                "residence": "Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội",
+                "doe": "01/01/2035",
+                "avatarPath": imageFile.path, // Use captured image as avatar
+              });
+
+              if (mounted) {
+                setState(() {
+                  _frontImagePath = imageFile.path;
+                  _isProcessing = false;
+                });
+              }
+
+              if (_scanType == ScanType.passport) {
+                _showMessage("Hoàn tất quét Hộ Chiếu (Demo)!", Colors.green);
+                _navigateToDetails();
+              } else {
+                _showMessage("Đã chụp mặt trước (Demo). Vui lòng lật thẻ!",
+                    Colors.green);
+                Future.delayed(const Duration(milliseconds: 800), () {
+                  if (mounted) setState(() => _isFrontSide = false);
+                });
+              }
+              return; // Stop here
+            } else {
+              // Back side
+              _collectedData['issueDate'] = "01/01/2021";
+              _collectedData['mrz'] =
+                  "IDVNM001202029221<<001202029221\n9501010M3501010VNM<<<<<<<<<<<6\nNGUYEN<<VAN<DEMO<<<<<<<<<<<<<<<";
+
+              if (mounted) {
+                setState(() {
+                  _backImagePath = imageFile.path;
+                  _isProcessing = false;
+                });
+              }
+
+              _showMessage("Hoàn tất quét CCCD (Demo)!", Colors.green);
+              _navigateToDetails();
+              return; // Stop here
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint("Demo mode check failed: $e");
+      }
+      // -----------------------
 
       // 2. GỌI SERVICE (Tất cả logic cắt ảnh/OCR nằm trong này)
       // Hàm này sẽ trả về Map chứa: id, name, ... và quan trọng là 'avatarPath'
