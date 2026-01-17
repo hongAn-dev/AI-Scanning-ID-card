@@ -127,9 +127,12 @@ class _AppDrawerState extends State<AppDrawer>
                   : null,
               child: (user?.avatar == null || user!.avatar.isEmpty)
                   ? Text(
-                      (user?.displayName ?? user?.userName ?? 'U')
-                          .substring(0, 1)
-                          .toUpperCase(),
+                      () {
+                        final name = user?.displayName ?? user?.userName ?? 'U';
+                        return (name.isNotEmpty ? name : 'U')
+                            .substring(0, 1)
+                            .toUpperCase();
+                      }(),
                       style: TextStyle(
                         fontSize: 24,
                         color: AppColors.red,

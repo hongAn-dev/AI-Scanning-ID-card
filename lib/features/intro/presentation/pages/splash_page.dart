@@ -97,10 +97,9 @@ class _SplashPageState extends State<SplashPage>
             );
           },
           child: SizedBox(
-            width: 300, // Explicit big size
-            height: 300,
+            width: MediaQuery.of(context).size.width * 0.5, // 50% width
             child: Image.asset(
-              'assets/unnamed-3emovebg-preview.png', // Use the original full quality one or optimized one
+              'assets/icon_optimized.png', // Try the optimized icon
               fit: BoxFit.contain,
             ),
           ),
