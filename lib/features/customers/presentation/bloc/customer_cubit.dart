@@ -27,7 +27,6 @@ class CustomerCubit extends Cubit<CustomerState> {
 
     if (refresh) {
       _currentPage = 0;
-      // Note: Do NOT clear _currentSearchQuery on refresh if we want to refresh the current search result
       emit(CustomerLoading());
     } else if (state is CustomerInitial) {
       emit(CustomerLoading());
@@ -64,8 +63,6 @@ class CustomerCubit extends Cubit<CustomerState> {
   }
 
   Future<void> loadMoreCustomers() async {
-    // Since we fetch 1000 items, loadMore might be redundant or just same logic
-    // For now, keep existing logic but update _allCustomers
     if (_isFetching) return;
     final currentState = state;
     if (currentState is CustomerLoaded && !currentState.hasReachedMax) {
@@ -94,13 +91,11 @@ class CustomerCubit extends Cubit<CustomerState> {
     }
   }
 
-  // ... addCustomer/deleteCustomer update _allCustomers too ...
-
   Future<void> addCustomer(Customer customer) async {
     emit(CustomerLoading());
     try {
       await repository.addCustomer(customer);
-      // Reload to ensure consistency
+      // Reload to ensure consistency (Repo handles mock data persistence in Demo)
       loadCustomers(refresh: true);
     } catch (e) {
       emit(CustomerError(message: "Lỗi thêm khách hàng: $e"));
@@ -110,54 +105,31 @@ class CustomerCubit extends Cubit<CustomerState> {
   Future<void> deleteCustomer(String id) async {
     emit(CustomerLoading());
     try {
-      // Optimistic remove (Optional, but let's just rely on reload for now to be safe with Loading state)
-      // actually, if we emit Loading, the list shows loading. So optimistic update isn't shown securely.
-      // Let's just do standard: Loading -> Delete API -> Success -> Refresh.
-
       await repository.deleteCustomer(id);
       loadCustomers(refresh: true);
     } catch (e) {
       emit(CustomerError(message: "Lỗi xóa khách hàng: $e"));
-      loadCustomers(refresh: true); // Revert on error
+      loadCustomers(refresh: true);
     }
   }
 
-  // Server-side search
+  // Server-side search (Repo handles local filter in Demo)
   void searchCustomers(String query) {
     print("SEARCH (Server): '$query'");
     _currentSearchQuery = query.trim();
     _currentPage = 0;
-
-    // Create query specific state or just use loadCustomers
-    // Using loadCustomers(refresh: true) effectively does the search
-    // But we need to handle the debounce which is UI side.
-    // Here we just execute the fetch.
-
     emit(CustomerLoading());
     loadCustomers(refresh: true);
   }
 
   Future<void> updateCustomer(Customer customer) async {
-    emit(CustomerLoading()); // Show loading UI immediately
+    emit(CustomerLoading());
     try {
-      print("Cubit: Attempting update via Delete -> Add strategy...");
-      // 1. Delete old customer
-      if (customer.id.isNotEmpty) {
-        print("   -> Deleting old customer ID: ${customer.id}");
-        await repository.deleteCustomer(customer.id);
-      }
-
-      // 2. Add as new customer (Backend will generate new ID)
-      print("   -> Adding new customer data...");
-      await repository.addCustomer(customer);
-
-      // 3. Refresh list
-      print("   ✅ Update (Replacement) successful. Refreshing list...");
+      await repository.updateCustomer(customer);
       loadCustomers(refresh: true);
     } catch (e) {
-      print("❌ Error during update (replacement): $e");
-      emit(CustomerError(message: "Lỗi cập nhật khách hàng (Replacement): $e"));
-      // Refresh to ensure consistent state
+      print("❌ Error during update: $e");
+      emit(CustomerError(message: "Lỗi cập nhật khách hàng: $e"));
       loadCustomers(refresh: true);
     }
   }
@@ -178,6 +150,6 @@ class CustomerCubit extends Cubit<CustomerState> {
     _currentPage = 0;
     _currentSearchQuery = "";
     _isFetching = false;
-    emit(CustomerInitial()); // Reset về trạng thái ban đầu
+    emit(CustomerInitial());
   }
 }

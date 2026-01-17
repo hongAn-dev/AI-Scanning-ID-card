@@ -99,13 +99,15 @@ class _CustomersPageState extends State<CustomersPage> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.store, color: AppColors.red),
-            tooltip: 'Đổi chi nhánh',
-            onPressed: () {
-              _showBranchSelectionDialog();
-            },
-          ),
+          // [DEMO_CHANGE] Ẩn nút chọn chi nhánh nếu không có tên chi nhánh (Demo Mode đã bỏ set tên)
+          if (_branchName.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.store, color: AppColors.red),
+              tooltip: 'Đổi chi nhánh',
+              onPressed: () {
+                _showBranchSelectionDialog();
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.refresh, color: AppColors.red),
             onPressed: () {

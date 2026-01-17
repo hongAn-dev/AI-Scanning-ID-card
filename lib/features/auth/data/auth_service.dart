@@ -122,8 +122,9 @@ class AuthService {
     await _prefs.setString(_keyUserAccount, demoJson);
 
     // 4. Set Default Location
-    await saveLocationId("0");
-    await saveLocationName("Chi nhánh Demo");
+    // [DEMO_CHANGE] Không set location mặc định để tránh hiển thị chi nhánh
+    // await saveLocationId("0");
+    // await saveLocationName("Chi nhánh Demo");
 
     print('🚀 Login Demo Success');
   }
