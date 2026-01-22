@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
+
 import 'package:flutter/foundation.dart'; // Để dùng compute
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -37,12 +37,11 @@ class CccdScanService {
       File imageFile, bool isFrontSide, ScanType scanType) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
-      final inputImage = InputImage.fromFilePath(imageFile.path);
       String sideLabel = isFrontSide ? "MẶT TRƯỚC" : "MẶT SAU";
       debugPrint("\n=== 📷 [$sideLabel] BẮT ĐẦU XỬ LÝ (Start) ===");
 
       // 1. Khởi chạy song song (Parallel Execution)
-      // Task A: Cắt ảnh khuôn mặt (Chỉ mặt trước) - Chạy Isolate nặng
+      // Task A: Cắt ảnh khuôn mặt (Chỉ mặt trước) - Dùng ảnh GỐC (Màu)
       Future<String?>? avatarFuture;
       if (isFrontSide) {
         avatarFuture = _cropFaceHybrid(imageFile);
@@ -50,9 +49,21 @@ class CccdScanService {
         avatarFuture = Future.value(null);
       }
 
-      // Task B: OCR Text (Native ML Kit)
+      // [REVERTED] Pre-processing removed to fix lag/performance issues.
+      // Final decision: Use original image.
+      File ocrInputFile = imageFile;
+
+      /* 
+      // [DISABLED] ImageEnhancer 
+      try {
+         // ... 
+      } catch (e) { ... }
+      */
+
+      // Task B: OCR Text (Native ML Kit) - Dùng ảnh GỐC
+      final inputImageForOcr = InputImage.fromFilePath(ocrInputFile.path);
       Future<RecognizedText> ocrFuture =
-          _textRecognizer.processImage(inputImage);
+          _textRecognizer.processImage(inputImageForOcr);
 
       // Chờ Task OCR xong trước để lấy text gọi AI
       final RecognizedText recognizedText = await ocrFuture;
@@ -63,7 +74,7 @@ class CccdScanService {
           _callGroqAI(recognizedText.text, !isFrontSide, scanType);
 
       // Chờ cả AI và Cut Face hoàn thành
-      final results = await Future.wait([aiFuture, avatarFuture!]);
+      final results = await Future.wait([aiFuture, avatarFuture]);
       debugPrint("⏱️ Total Process Time: ${stopwatch.elapsedMilliseconds}ms");
 
       Map<String, String> extractedData = results[0] as Map<String, String>;
@@ -211,6 +222,11 @@ Rules:
           Map<String, String> result =
               jsonResult.map((k, v) => MapEntry(k, v?.toString() ?? ""));
 
+          // [POST-PROCESSING] Validate Name specifically
+          if (result.containsKey("name")) {
+            result["name"] = _cleanName(result["name"]!);
+          }
+
           // [LOGIC BỔ SUNG] Chỉ chạy logic tính ngày hết hạn cho CCCD
           if (scanType == ScanType.cccd &&
               !isBackSide &&
@@ -243,6 +259,33 @@ Rules:
       debugPrint("❌ AI Error: $e");
     }
     return {};
+  }
+
+  // [NEW] Helper to clean Name
+  String _cleanName(String input) {
+    try {
+      if (input.isEmpty) return "";
+
+      // 1. Remove prefixes
+      String cleaned =
+          input.replaceAll(RegExp(r'(?i)^(HO VA TEN|HO TEN|NAME)[:\s]*'), '');
+
+      // 2. To Uppercase
+      cleaned = cleaned.toUpperCase();
+
+      // 3. Remove non-name characters (Digits, Symbols). ALLOW Vietnamese accents.
+      // Using Blacklist approach is safer than Whitelist \p{L} to avoid crashing.
+      cleaned = cleaned.replaceAll(
+          RegExp(r'[0-9!@#\$%^&*()_+={}\[\]|\\:;"<>,.?/~`-]'), '');
+
+      // 4. Normalize spaces
+      cleaned = cleaned.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+      return cleaned;
+    } catch (e) {
+      debugPrint("⚠️ _cleanName Error: $e");
+      return input.toUpperCase(); // Fallback
+    }
   }
 
   // --- [FIXED] HÀM CẮT ẢNH HYBRID ---

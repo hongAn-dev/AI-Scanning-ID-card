@@ -182,6 +182,43 @@ class CustomerRepositoryImpl implements CustomerRepository {
               ? customer.locationId!
               : prefLocationId;
 
+      // [TEST REQUEST] Force GroupId to null to test backend behavior
+      String? finalGroupId = null;
+      print("⚠️ [TEST] Forcing GroupId to NULL for testing purpose.");
+
+      /*
+      // [FIX] Ensure GroupId is a valid GUID from existing groups
+      // The error "Foreign Key constraint" means we cannot send arbitrary strings like "CN01"
+      String? finalGroupId = customer.groupId;
+
+      try {
+        final clusters = await getCustomerGroups();
+        if (clusters.isNotEmpty) {
+          // 1. Is current finalGroupId valid?
+          bool isValid = clusters.any((g) => g.id == finalGroupId);
+
+          if (!isValid) {
+            print(
+                "⚠️ Invalid/Empty GroupId '$finalGroupId'. Attempting auto-assign...");
+
+            // 2. Try to match by LocationId (assuming LocationId might match Group Name/Code)
+            // Clean locationId to ensure better matching if needed
+            final matchByLocation = clusters.firstWhere(
+                (g) => g.name.trim() == locationId.trim() || g.id == locationId,
+                orElse: () =>
+                    clusters.first // Fallback to first available group
+                );
+
+            finalGroupId = matchByLocation.id;
+            print(
+                "✅ Auto-assigned GroupId: '$finalGroupId' (Name: ${matchByLocation.name})");
+          }
+        }
+      } catch (e) {
+        print("⚠️ Could not fetch groups for validation: $e");
+      }
+      */
+
       final Map<String, dynamic> body = {
         "Id": "",
         "CustomerCode": customer.code ?? "",
@@ -189,11 +226,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
         "BirthDay": (customer.dob != null && customer.dob!.year > 1753)
             ? customer.dob!.toIso8601String()
             : DateTime(1990, 1, 1).toIso8601String(), // Default safe date
-        "GroupId": (customer.groupId == null ||
-                customer.groupId!.isEmpty ||
-                customer.groupId!.toLowerCase() == "null")
-            ? (locationId.isNotEmpty ? locationId : null)
-            : customer.groupId,
+        "GroupId": finalGroupId,
         "Address": customer.address ?? "",
         "Tel": customer.phone ?? "",
         "Email": "",
@@ -206,6 +239,9 @@ class CustomerRepositoryImpl implements CustomerRepository {
         "Password": "123",
         "LocationId": locationId
       };
+
+      print(
+          "🚀 AddCustomer Body: GroupId='${body['GroupId']}', LocationId='${body['LocationId']}'");
 
       // 3. Attempt API Call
       await remoteDataSource.addNewCustomer(body);

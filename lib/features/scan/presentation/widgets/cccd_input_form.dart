@@ -616,7 +616,10 @@ class _CccdInputFormState extends State<CccdInputForm> {
 
                               Navigator.of(ctx).pop(); // Close Dialog
 
-                              // Just call delete. The BlocListener will show Loading -> Success -> Pop Page.
+                              // [FIX] Update flag to let BlocListener know we are performing an action
+                              if (mounted) setState(() => _isSubmitting = true);
+
+                              // Call Delete
                               context
                                   .read<CustomerCubit>()
                                   .deleteCustomer(customerId);

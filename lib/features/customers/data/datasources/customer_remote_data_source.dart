@@ -83,11 +83,21 @@ class CustomerRemoteDataSourceImpl {
             data['data'] != null &&
             data['data']['Result'] != null) {
           final result = data['data']['Result'].toString();
-          if (result.contains("Could not find stored procedure")) {
+          print("👉 AddCustomer API Result: $result"); // [DEBUG LOG]
+
+          // Check for common backend errors
+          if (result.contains("Could not find stored procedure") ||
+              result.toLowerCase().contains("error") ||
+              result.toLowerCase().contains("fail") ||
+              result.toLowerCase().contains("duplicate") ||
+              result.toLowerCase().contains("existed")) {
             throw Exception("Server Error: $result");
           }
+
+          // Assuming Success result is an ID or "1" or similar
+          return true;
         }
-        return true;
+        return true; // Fallback if no Result field (risky but keep existing behavior)
       }
       return false;
     } catch (e) {

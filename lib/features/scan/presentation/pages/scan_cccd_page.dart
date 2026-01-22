@@ -128,7 +128,7 @@ class _ScanCccdPageState extends State<ScanCccdPage>
 
       _cameraController = CameraController(
         backCam,
-        ResolutionPreset.high,
+        ResolutionPreset.veryHigh,
         enableAudio: false,
         // [FIX] Bỏ imageFormatGroup trên iOS để tránh lỗi màn hình đen
       );
