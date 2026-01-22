@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/string_utils.dart';
 import '../../../../injection_container.dart' as di;
 import '../../../customers/domain/entities/customer.dart';
 import '../../../customers/domain/entities/customer_group.dart';
@@ -60,7 +61,9 @@ class _CccdInputFormState extends State<CccdInputForm> {
   void _initializeData() {
     final data = widget.scannedData;
 
-    _nameCtrl = TextEditingController(text: data['name'] ?? '');
+    // Normalize name to remove diacritics by default to avoid OCR mismatches
+    _nameCtrl = TextEditingController(
+      text: StringUtils.removeDiacritics(data['name'] ?? ''));
     _cccdCtrl = TextEditingController(text: data['id'] ?? '');
     _nationalityCtrl =
         TextEditingController(text: data['nationality'] ?? 'Việt Nam');
@@ -535,8 +538,9 @@ class _CccdInputFormState extends State<CccdInputForm> {
                     cubit.updateCustomer(newCustomer);
                   } else {
                     // Check Duplicate First
-                    final exists = await cubit.checkCustomerExists(
-                        newCustomer.identityNumber ?? '', '', newCustomer.name);
+                      // Only check by CCCD/identity number to avoid false positives by name
+                      final exists = await cubit.checkCustomerExists(
+                        newCustomer.identityNumber ?? '', '', '');
                     if (exists && context.mounted) {
                       showDialog(
                         context: context,
