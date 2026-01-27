@@ -110,6 +110,30 @@ class CccdScanService {
           };
         }
 
+        // [VALIDATION MỚI (STRICT)] Kiểm tra từ khóa MẶT TRƯỚC
+        // Nếu không thấy "CỘNG HÒA", "ĐỘC LẬP", "QUỐC TỊCH", "SOCIALIST REPUBLIC" -> Reject
+        if (scanType == ScanType.cccd) {
+          final rawUpper = recognizedText.text.toUpperCase();
+          final hasKeywords = rawUpper.contains("CỘNG HÒA") ||
+              rawUpper.contains("CONG HOA") ||
+              rawUpper.contains("ĐỘC LẬP") ||
+              rawUpper.contains("DOC LAP") ||
+              rawUpper.contains("QUỐC TỊCH") ||
+              rawUpper.contains("QUOC TICH") ||
+              rawUpper.contains("SOCIALIST REPUBLIC") ||
+              rawUpper.contains("SOCIALISTREPUBLIC");
+
+          if (!hasKeywords) {
+            debugPrint(
+                "⚠️ Không tìm thấy từ khóa MẶT TRƯỚC (CỘNG HÒA, ĐỘC LẬP...)");
+            return {
+              'success': false,
+              'error':
+                  'Không nhận diện được thẻ CCCD/CMND Mặt Trước. Vui lòng thử lại.'
+            };
+          }
+        }
+
         if (!isValidId) {
           debugPrint("❌ [$sideLabel] ID không hợp lệ.");
           return {
