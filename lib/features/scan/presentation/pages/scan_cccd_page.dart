@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../data/scan_function.dart';
 import '../widgets/ui_scan.dart';
 import 'cccd_details_page.dart';
+import 'passport_details_page.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../injection_container.dart' as di;
 import '../../../auth/data/auth_service.dart';
@@ -322,19 +323,35 @@ class _ScanCccdPageState extends State<ScanCccdPage>
     // [MODIFIED] Use pushReplacement so that when user clicks "Back" in DetailsPage,
     // they go back to the screen BEFORE ScanPage (i.e., Home Page).
     // The 'shouldClose' logic is no longer needed since this page is gone from stack.
-    await Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => CccdDetailsPage(
-          frontImagePath: _frontImagePath!,
-          backImagePath:
-              _backImagePath ?? _frontImagePath!, // Passport has no back image
-          scannedData: {
-            ..._collectedData,
-            'type': _scanType == ScanType.passport ? 'PASSPORT' : 'CCCD',
-          },
+    // [MODIFIED] Check Type to navigate to correct Page
+    if (_scanType == ScanType.passport) {
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => PassportDetailsPage(
+            frontImagePath: _frontImagePath!,
+            backImagePath: _backImagePath,
+            scannedData: {
+              ..._collectedData,
+              'type': 'PASSPORT',
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      // Navigate to CCCD Details
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => CccdDetailsPage(
+            frontImagePath: _frontImagePath!,
+            backImagePath: _backImagePath ?? _frontImagePath!,
+            scannedData: {
+              ..._collectedData,
+              'type': 'CCCD',
+            },
+          ),
+        ),
+      );
+    }
 
     // Note: Code below this point might not run if the page is disposed of immediately.
     // If we wanted to keep ScanPage in stack but go back 2 steps, we'd do it differently.
