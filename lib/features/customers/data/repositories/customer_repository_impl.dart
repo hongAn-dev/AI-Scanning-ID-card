@@ -171,17 +171,23 @@ class CustomerRepositoryImpl implements CustomerRepository {
         "home": customer.hometown,
       };
       String jsonExtra = jsonEncode(extraData);
-      // Truncate JSON extra to avoid sending extremely long description that
-      // may cause DB column truncation on server side.
+
+      // [OPTIMIZATION] Check length against safe limit (e.g. 400-500 chars)
+      // If too long, remove image paths to preserve critical data (Gender, Hometown)
+      if (jsonExtra.length > 400) {
+        Map<String, dynamic> optimized = Map.from(extraData);
+        optimized.remove('front');
+        optimized.remove('back');
+        optimized.remove('avatarPath');
+        jsonExtra = jsonEncode(optimized);
+        print("⚠️ JSON too long. Optimized to length: ${jsonExtra.length}");
+      }
+
       String shortJson = jsonExtra;
-      const int maxJsonLen =
-          2000; // [FIX] Increased from 400 to avoid JSON breakage
+      const int maxJsonLen = 2000;
       if (shortJson.length > maxJsonLen) {
-        // We cannot just substring a JSON string, it will be invalid.
-        // Better to drop less critical definition if needed, or just warn.
         print(
-            '⚠️ JSON Extra Data is too long (${shortJson.length} chars). Might be truncated by server.');
-        // shortJson = shortJson.substring(0, maxJsonLen) + '...'; // [FIX] Do NOT truncate manually to keep JSON valid.
+            '⚠️ JSON still too long (${shortJson.length}). Risk of truncation.');
       }
 
       String description = "Quét từ CCCD: ${customer.identityNumber ?? ''}";
@@ -418,12 +424,22 @@ class CustomerRepositoryImpl implements CustomerRepository {
         "home": customer.hometown,
       };
       String jsonExtra = jsonEncode(extraData);
+
+      // [OPTIMIZATION]
+      if (jsonExtra.length > 400) {
+        Map<String, dynamic> optimized = Map.from(extraData);
+        optimized.remove('front');
+        optimized.remove('back');
+        optimized.remove('avatarPath');
+        jsonExtra = jsonEncode(optimized);
+        print("⚠️ JSON too long. Optimized to length: ${jsonExtra.length}");
+      }
+
       String shortJson = jsonExtra;
-      const int maxJsonLen = 2000; // [FIX] Increased
+      const int maxJsonLen = 2000;
       if (shortJson.length > maxJsonLen) {
         print(
             '⚠️ JSON Extra Data is too long (${shortJson.length} chars). Might be truncated by server.');
-        // shortJson = shortJson.substring(0, maxJsonLen) + '...';
       }
 
       String description = "Quét từ CCCD: ${customer.identityNumber ?? ''}";
