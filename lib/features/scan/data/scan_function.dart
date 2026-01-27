@@ -96,6 +96,22 @@ class CccdScanService {
           isValidId = id != null && id.length >= 6;
         }
 
+        // [VALIDATION MỚI (STRICT)] Kiểm tra xem có phải Hộ Chiếu không (Negative Keyword)
+        if (scanType == ScanType.cccd) {
+          final rawUpper = recognizedText.text.toUpperCase();
+          if (rawUpper.contains("PASSPORT") ||
+              rawUpper.contains("HỘ CHIẾU") ||
+              rawUpper.contains("HO CHIEU") ||
+              rawUpper.contains("P<VNM")) {
+            debugPrint("⚠️ Phát hiện từ khóa Hộ Chiếu khi đang quét CCCD");
+            return {
+              'success': false,
+              'error':
+                  'Phát hiện Hộ Chiếu! Vui lòng chuyển sang tab "Hộ Chiếu" để quét.'
+            };
+          }
+        }
+
         // [VALIDATION MỚI] Check Front vs Back confusion
         // Nếu là CCCD mặt trước mà lại thấy MRZ (dấu hiệu mặt sau) -> Cảnh báo
         if (scanType == ScanType.cccd &&
