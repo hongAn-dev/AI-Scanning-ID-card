@@ -798,3 +798,19 @@ class _CccdInputFormState extends State<CccdInputForm> {
     );
   }
 }
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // 1. Remove diacritics
+    String cleanText = StringUtils.removeDiacritics(newValue.text);
+    // 2. Uppercase
+    cleanText = cleanText.toUpperCase();
+
+    return TextEditingValue(
+      text: cleanText,
+      selection: newValue.selection,
+    );
+  }
+}
