@@ -375,14 +375,18 @@ class _CccdInputFormState extends State<CccdInputForm> {
             _buildTextField(controller: _nationalityCtrl, icon: Icons.public),
             const SizedBox(height: 16),
 
-            _buildLabel('Quê quán'),
+            _buildLabel(widget.scannedData['type'] == 'PASSPORT'
+                ? 'Nơi sinh'
+                : 'Quê quán'),
             _buildTextField(
                 controller: _originCtrl,
                 icon: Icons.home_work_outlined,
                 maxLines: 3),
             const SizedBox(height: 16),
 
-            _buildLabel('Nơi thường trú'),
+            _buildLabel(widget.scannedData['type'] == 'PASSPORT'
+                ? 'Địa chỉ / Nơi cấp'
+                : 'Nơi thường trú'),
             _buildTextField(
                 controller: _residenceCtrl,
                 icon: Icons.location_on_outlined,

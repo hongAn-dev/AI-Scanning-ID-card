@@ -299,7 +299,7 @@ Rules:
 
           // [POST-PROCESSING] Validate Name specifically
           if (result.containsKey("name")) {
-            result["name"] = _cleanName(result["name"]!);
+            result["name"] = cleanName(result["name"]!);
           }
 
           // [LOGIC BỔ SUNG] Chỉ chạy logic tính ngày hết hạn cho CCCD
@@ -315,7 +315,7 @@ Rules:
             bool isModernCard = cardType == "CHIP" || (id.length == 12);
 
             if (isModernCard) {
-              String calcExpiry = _calculateExpiry(dob);
+              String calcExpiry = calculateExpiry(dob);
               if (calcExpiry.isNotEmpty &&
                   (ocrExpiry.isEmpty || ocrExpiry != calcExpiry)) {
                 debugPrint(
@@ -337,7 +337,7 @@ Rules:
   }
 
   // [NEW] Helper to clean Name
-  String _cleanName(String input) {
+  static String cleanName(String input) {
     try {
       if (input.isEmpty) return "";
 
@@ -363,7 +363,7 @@ Rules:
 
       return cleaned;
     } catch (e) {
-      debugPrint("⚠️ _cleanName Error: $e");
+      debugPrint("⚠️ cleanName Error: $e");
       return input.toUpperCase(); // Fallback
     }
   }
@@ -421,7 +421,7 @@ Rules:
     }
   }
 
-  String _calculateExpiry(String dobStr) {
+  static String calculateExpiry(String dobStr) {
     try {
       DateTime dob =
           DateFormat("dd/MM/yyyy").parse(dobStr.replaceAll('-', '/').trim());

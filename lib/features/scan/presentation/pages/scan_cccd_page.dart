@@ -319,7 +319,10 @@ class _ScanCccdPageState extends State<ScanCccdPage>
   void _navigateToDetails() async {
     _animationController.stop();
 
-    final shouldClose = await Navigator.of(context).push(
+    // [MODIFIED] Use pushReplacement so that when user clicks "Back" in DetailsPage,
+    // they go back to the screen BEFORE ScanPage (i.e., Home Page).
+    // The 'shouldClose' logic is no longer needed since this page is gone from stack.
+    await Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => CccdDetailsPage(
           frontImagePath: _frontImagePath!,
@@ -333,14 +336,9 @@ class _ScanCccdPageState extends State<ScanCccdPage>
       ),
     );
 
-    // Nếu trang chi tiết trả về true (đã Lưu/Xóa) -> Đóng luôn trang Scan
-    if (shouldClose == true && mounted) {
-      Navigator.of(context).pop();
-      return;
-    }
-
-    // Resume khi quay lại (nếu chưa đóng)
-    if (mounted) _animationController.repeat(reverse: true);
+    // Note: Code below this point might not run if the page is disposed of immediately.
+    // If we wanted to keep ScanPage in stack but go back 2 steps, we'd do it differently.
+    // But requirement is simple: Return to Home.
   }
 
   void _showMessage(String msg, Color color) {
