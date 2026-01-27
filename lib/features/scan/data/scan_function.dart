@@ -294,8 +294,11 @@ Rules:
 
           debugPrint("📝 AI EXTRACTED DATA: ${jsonEncode(jsonResult)}");
 
-          Map<String, String> result =
-              jsonResult.map((k, v) => MapEntry(k, v?.toString() ?? ""));
+          // [FIX] Normalize keys to lowercase to avoid potential AI casing issues
+          Map<String, String> result = {};
+          jsonResult.forEach((key, value) {
+            result[key.toLowerCase()] = value?.toString() ?? "";
+          });
 
           // [POST-PROCESSING] Validate Name specifically
           if (result.containsKey("name")) {

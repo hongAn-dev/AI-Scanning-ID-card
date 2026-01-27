@@ -26,7 +26,8 @@ class CccdDetailsPage extends StatelessWidget {
         backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () =>
+              Navigator.of(context).popUntil((route) => route.isFirst),
         ),
         title: Text(
           isAddNew ? 'Thêm khách hàng mới' : 'Chi tiết khách hàng',

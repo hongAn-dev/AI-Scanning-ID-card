@@ -174,11 +174,14 @@ class CustomerRepositoryImpl implements CustomerRepository {
       // Truncate JSON extra to avoid sending extremely long description that
       // may cause DB column truncation on server side.
       String shortJson = jsonExtra;
-      const int maxJsonLen = 400; // keep small to be safe
+      const int maxJsonLen =
+          2000; // [FIX] Increased from 400 to avoid JSON breakage
       if (shortJson.length > maxJsonLen) {
-        shortJson = shortJson.substring(0, maxJsonLen) + '...';
+        // We cannot just substring a JSON string, it will be invalid.
+        // Better to drop less critical definition if needed, or just warn.
         print(
-            '⚠️ Truncated extra JSON (length ${jsonExtra.length}) to $maxJsonLen chars');
+            '⚠️ JSON Extra Data is too long (${shortJson.length} chars). Might be truncated by server.');
+        // shortJson = shortJson.substring(0, maxJsonLen) + '...'; // [FIX] Do NOT truncate manually to keep JSON valid.
       }
 
       String description = "Quét từ CCCD: ${customer.identityNumber ?? ''}";
@@ -416,11 +419,11 @@ class CustomerRepositoryImpl implements CustomerRepository {
       };
       String jsonExtra = jsonEncode(extraData);
       String shortJson = jsonExtra;
-      const int maxJsonLen = 400;
+      const int maxJsonLen = 2000; // [FIX] Increased
       if (shortJson.length > maxJsonLen) {
-        shortJson = shortJson.substring(0, maxJsonLen) + '...';
         print(
-            '⚠️ Truncated extra JSON (length ${jsonExtra.length}) to $maxJsonLen chars');
+            '⚠️ JSON Extra Data is too long (${shortJson.length} chars). Might be truncated by server.');
+        // shortJson = shortJson.substring(0, maxJsonLen) + '...';
       }
 
       String description = "Quét từ CCCD: ${customer.identityNumber ?? ''}";
