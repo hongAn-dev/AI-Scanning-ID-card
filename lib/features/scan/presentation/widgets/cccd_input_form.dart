@@ -445,21 +445,35 @@ class _CccdInputFormState extends State<CccdInputForm> {
                     return;
                   }
 
-                  // 3. Check CCCD
+                  // 3. Check CCCD / Passport
                   final cccd = _cccdCtrl.text.trim();
                   if (cccd.isEmpty) {
-                    _showMessage("Vui lòng nhập Số CCCD/CMND!", AppColors.red);
+                    _showMessage(
+                        "Vui lòng nhập Số CCCD/Hộ chiếu!", AppColors.red);
                     return;
                   }
-                  if (!RegExp(r'^\d+$').hasMatch(cccd)) {
-                    _showMessage(
-                        "Số CCCD chỉ được chứa chữ số!", AppColors.red);
-                    return;
-                  }
-                  if (cccd.length != 9 && cccd.length != 12) {
-                    _showMessage(
-                        "Số CCCD phải có 9 hoặc 12 chữ số!", AppColors.red);
-                    return;
+
+                  final isPassport = widget.scannedData['type'] == 'PASSPORT';
+
+                  if (isPassport) {
+                    // Passport: Có thể có chữ và số, độ dài >= 6
+                    if (cccd.length < 6) {
+                      _showMessage("Số Hộ chiếu phải có ít nhất 6 ký tự!",
+                          AppColors.red);
+                      return;
+                    }
+                  } else {
+                    // CCCD: Chỉ số, 9 hoặc 12 số
+                    if (!RegExp(r'^\d+$').hasMatch(cccd)) {
+                      _showMessage(
+                          "Số CCCD chỉ được chứa chữ số!", AppColors.red);
+                      return;
+                    }
+                    if (cccd.length != 9 && cccd.length != 12) {
+                      _showMessage(
+                          "Số CCCD phải có 9 hoặc 12 chữ số!", AppColors.red);
+                      return;
+                    }
                   }
 
                   // 4. Check Dates
