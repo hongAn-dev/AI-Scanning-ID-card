@@ -171,8 +171,17 @@ class CustomerRepositoryImpl implements CustomerRepository {
         "home": customer.hometown,
       };
       String jsonExtra = jsonEncode(extraData);
+      // Truncate JSON extra to avoid sending extremely long description that
+      // may cause DB column truncation on server side.
+      String shortJson = jsonExtra;
+      const int maxJsonLen = 400; // keep small to be safe
+      if (shortJson.length > maxJsonLen) {
+        shortJson = shortJson.substring(0, maxJsonLen) + '...';
+        print('⚠️ Truncated extra JSON (length ${jsonExtra.length}) to $maxJsonLen chars');
+      }
+
       String description = "Quét từ CCCD: ${customer.identityNumber ?? ''}";
-      description += " ||JSON:$jsonExtra";
+      description += " ||JSON:$shortJson";
 
       // Get LocationId from prefs or use customer.locationId
       final prefs = await SharedPreferences.getInstance();
@@ -219,10 +228,15 @@ class CustomerRepositoryImpl implements CustomerRepository {
       }
       */
 
+      // Ensure CustomerName length is within reasonable bounds to avoid DB truncation
+      final safeName = (customer.name != null && customer.name.length > 150)
+          ? customer.name.substring(0, 150)
+          : customer.name;
+
       final Map<String, dynamic> body = {
         "Id": "",
         "CustomerCode": customer.code ?? "",
-        "CustomerName": customer.name,
+        "CustomerName": safeName,
         "BirthDay": (customer.dob != null && customer.dob!.year > 1753)
             ? customer.dob!.toIso8601String()
             : DateTime(1990, 1, 1).toIso8601String(), // Default safe date
@@ -231,7 +245,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
         "Tel": customer.phone ?? "",
         "Email": "",
         "Description": description,
-        "Avatar": avatarBase64,
+        // Avoid sending very large avatar payloads (base64) that may overflow DB columns.
+        "Avatar": (avatarBase64.length > 100000) ? "" : avatarBase64,
         "TaxCode":
             customer.identityNumber ?? "", // Map CCCD to TaxCode for Search
         "Longitude": 0,
@@ -399,8 +414,15 @@ class CustomerRepositoryImpl implements CustomerRepository {
         "home": customer.hometown,
       };
       String jsonExtra = jsonEncode(extraData);
+      String shortJson = jsonExtra;
+      const int maxJsonLen = 400;
+      if (shortJson.length > maxJsonLen) {
+        shortJson = shortJson.substring(0, maxJsonLen) + '...';
+        print('⚠️ Truncated extra JSON (length ${jsonExtra.length}) to $maxJsonLen chars');
+      }
+
       String description = "Quét từ CCCD: ${customer.identityNumber ?? ''}";
-      description += " ||JSON:$jsonExtra";
+      description += " ||JSON:$shortJson";
 
       final prefs = await SharedPreferences.getInstance();
       final prefLocationId = prefs.getString('location_id') ?? "";
@@ -417,10 +439,15 @@ class CustomerRepositoryImpl implements CustomerRepository {
         finalGroupId = (locationId.isNotEmpty ? locationId : null);
       }
 
+      // Ensure CustomerName length is within reasonable bounds to avoid DB truncation
+      final safeNameUpd = (customer.name != null && customer.name.length > 150)
+          ? customer.name.substring(0, 150)
+          : customer.name;
+
       final Map<String, dynamic> body = {
         "Id": customer.id, // Mandatory for Update
         "CustomerCode": customer.code ?? "",
-        "CustomerName": customer.name,
+        "CustomerName": safeNameUpd,
         "BirthDay": (customer.dob != null && customer.dob!.year > 1753)
             ? customer.dob!.toIso8601String()
             : DateTime(1990, 1, 1).toIso8601String(),
@@ -429,7 +456,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
         "Tel": customer.phone ?? "",
         "Email": "",
         "Description": description,
-        "Avatar": avatarBase64,
+        "Avatar": (avatarBase64.length > 100000) ? "" : avatarBase64,
         "TaxCode": customer.identityNumber ?? "", // Map CCCD to TaxCode
         "Longitude": 0,
         "Latitude": 0,

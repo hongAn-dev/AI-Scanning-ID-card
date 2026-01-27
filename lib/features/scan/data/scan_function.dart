@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import '../../../../core/utils/string_utils.dart';
 
 enum ScanType { cccd, passport }
 
@@ -95,6 +96,20 @@ class CccdScanService {
           isValidId = id != null && id.length >= 6;
         }
 
+        // [VALIDATION MỚI] Check Front vs Back confusion
+        // Nếu là CCCD mặt trước mà lại thấy MRZ (dấu hiệu mặt sau) -> Cảnh báo
+        if (scanType == ScanType.cccd &&
+            extractedData.containsKey('mrz') &&
+            extractedData['mrz']!.length > 20) {
+          debugPrint(
+              "⚠️ Phát hiện MRZ ở chế độ Mặt Trước -> Có thể là Mặt Sau");
+          return {
+            'success': false,
+            'error':
+                'Có vẻ bạn đang quét MẶT SAU. Vui lòng chuyển sang chế độ quét MẶT TRƯỚC hoặc lật thẻ lại.'
+          };
+        }
+
         if (!isValidId) {
           debugPrint("❌ [$sideLabel] ID không hợp lệ.");
           return {
@@ -109,6 +124,26 @@ class CccdScanService {
           debugPrint("✅ [FINAL] Avatar Path: $avatarPath");
         } else {
           debugPrint("⚠️ [FINAL] Không cắt được ảnh, sẽ dùng ảnh gốc.");
+        }
+      } else {
+        // --- MẶT SAU (CCCD Only) ---
+        // [VALIDATION MỚI] Check Back vs Front confusion
+        // Nếu thấy khuôn mặt rõ ràng -> Có thể là Mặt Trước
+        // FaceDetector đã chạy ở extractedData không? Không, FaceDetector chạy riêng.
+        // Ta cần check kết quả detect face ở step cropFaceHybrid?
+        // Nhưng logic cropFaceHybrid chỉ chạy khi isFrontSide = true (Line 46).
+        // Vậy nên ta cần chạy check face sơ bộ nếu muốn validate kỹ.
+        // Tuy nhiên, để tối ưu hiệu năng, ta check gián tiếp qua keywords.
+
+        // Nếu KHÔNG thấy MRZ -> Khả năng cao không phải mặt sau.
+        String? mrz = extractedData['mrz'];
+        if (mrz == null || mrz.length < 10) {
+          debugPrint("❌ [$sideLabel] Không thấy MRZ.");
+          return {
+            'success': false,
+            'error':
+                'Không tìm thấy mã MRZ (Dòng chữ số ở gáy thẻ). Có thể bạn đang quét MẶT TRƯỚC?'
+          };
         }
       }
 
@@ -280,6 +315,11 @@ Rules:
 
       // 4. Normalize spaces
       cleaned = cleaned.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+      // 5. [NEW] Remove Diacritics (Chuyển thành không dấu)
+      // Input đang là Uppercase có dấu (do step 2) -> toLowerCase -> remove -> toUpperCase
+      cleaned =
+          StringUtils.removeDiacritics(cleaned.toLowerCase()).toUpperCase();
 
       return cleaned;
     } catch (e) {

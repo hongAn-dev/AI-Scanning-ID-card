@@ -325,7 +325,10 @@ class _ScanCccdPageState extends State<ScanCccdPage>
           frontImagePath: _frontImagePath!,
           backImagePath:
               _backImagePath ?? _frontImagePath!, // Passport has no back image
-          scannedData: _collectedData,
+          scannedData: {
+            ..._collectedData,
+            'type': _scanType == ScanType.passport ? 'PASSPORT' : 'CCCD',
+          },
         ),
       ),
     );
