@@ -1,4 +1,3 @@
-import '../../../../core/utils/string_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/customer.dart';
 import '../../domain/repositories/customer_repository.dart';
@@ -13,9 +12,6 @@ class CustomerCubit extends Cubit<CustomerState> {
   bool _isFetching = false;
   String _currentSearchQuery = "";
   final int _pageSize = 20;
-
-  // No longer forcing "KH" filter
-  String get _effectiveSearchText => _currentSearchQuery;
 
   // Cache for local search
   // List<Customer> _allCustomers = []; // Removed as per instruction

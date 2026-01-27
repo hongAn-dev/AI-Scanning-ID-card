@@ -177,7 +177,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
       const int maxJsonLen = 400; // keep small to be safe
       if (shortJson.length > maxJsonLen) {
         shortJson = shortJson.substring(0, maxJsonLen) + '...';
-        print('⚠️ Truncated extra JSON (length ${jsonExtra.length}) to $maxJsonLen chars');
+        print(
+            '⚠️ Truncated extra JSON (length ${jsonExtra.length}) to $maxJsonLen chars');
       }
 
       String description = "Quét từ CCCD: ${customer.identityNumber ?? ''}";
@@ -229,7 +230,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       */
 
       // Ensure CustomerName length is within reasonable bounds to avoid DB truncation
-      final safeName = (customer.name != null && customer.name.length > 150)
+      final safeName = (customer.name.length > 150)
           ? customer.name.substring(0, 150)
           : customer.name;
 
@@ -418,7 +419,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
       const int maxJsonLen = 400;
       if (shortJson.length > maxJsonLen) {
         shortJson = shortJson.substring(0, maxJsonLen) + '...';
-        print('⚠️ Truncated extra JSON (length ${jsonExtra.length}) to $maxJsonLen chars');
+        print(
+            '⚠️ Truncated extra JSON (length ${jsonExtra.length}) to $maxJsonLen chars');
       }
 
       String description = "Quét từ CCCD: ${customer.identityNumber ?? ''}";
@@ -440,7 +442,7 @@ class CustomerRepositoryImpl implements CustomerRepository {
       }
 
       // Ensure CustomerName length is within reasonable bounds to avoid DB truncation
-      final safeNameUpd = (customer.name != null && customer.name.length > 150)
+      final safeNameUpd = (customer.name.length > 150)
           ? customer.name.substring(0, 150)
           : customer.name;
 

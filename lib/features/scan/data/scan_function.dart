@@ -342,8 +342,8 @@ Rules:
       if (input.isEmpty) return "";
 
       // 1. Remove prefixes
-      String cleaned =
-          input.replaceAll(RegExp(r'(?i)^(HO VA TEN|HO TEN|NAME)[:\s]*'), '');
+      String cleaned = input.replaceAll(
+          RegExp(r'^(HO VA TEN|HO TEN|NAME)[:\s]*', caseSensitive: false), '');
 
       // 2. To Uppercase
       cleaned = cleaned.toUpperCase();
@@ -428,16 +428,19 @@ Rules:
       DateTime now = DateTime.now();
       int age = now.year - dob.year;
       if (now.month < dob.month ||
-          (now.month == dob.month && now.day < dob.day)) age--;
+          (now.month == dob.month && now.day < dob.day)) {
+        age--;
+      }
       int targetYear;
-      if (age < 25)
+      if (age < 25) {
         targetYear = dob.year + 25;
-      else if (age < 40)
+      } else if (age < 40) {
         targetYear = dob.year + 40;
-      else if (age < 60)
+      } else if (age < 60) {
         targetYear = dob.year + 60;
-      else
+      } else {
         return "Vô thời hạn";
+      }
       return DateFormat("dd/MM/yyyy")
           .format(DateTime(targetYear, dob.month, dob.day));
     } catch (e) {

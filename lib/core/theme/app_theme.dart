@@ -23,21 +23,21 @@ class AppTheme {
           backgroundColor: AppColors.white,
           surfaceTintColor: Colors.transparent,
           // Colors for the days
-          dayForegroundColor: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.selected)) {
+          dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
               return AppColors.text; // Text remains black
             }
             return AppColors.text;
           }),
-          dayBackgroundColor: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.selected)) {
+          dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
               // Glassy effect: Low opacity black (or primary)
-              return Colors.black.withOpacity(0.1);
+              return Colors.black.withValues(alpha: 0.1);
             }
             return Colors.transparent;
           }),
-          todayForegroundColor: MaterialStateProperty.all(AppColors.red),
-          todayBackgroundColor: MaterialStateProperty.all(Colors.transparent),
+          todayForegroundColor: WidgetStateProperty.all(AppColors.red),
+          todayBackgroundColor: WidgetStateProperty.all(Colors.transparent),
         ),
         textTheme: const TextTheme(
           bodySmall: TextStyle(

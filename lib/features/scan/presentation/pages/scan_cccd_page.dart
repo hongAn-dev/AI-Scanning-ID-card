@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -608,7 +608,7 @@ class _ScanCccdPageState extends State<ScanCccdPage>
                         ScanSquareButton(
                           icon: Icons.photo_library_outlined,
                           iconColor: AppColors.red,
-                          bgColor: AppColors.red.withOpacity(0.1),
+                          bgColor: AppColors.red.withValues(alpha: 0.1),
                           onTap: _pickImageFromGallery,
                         ),
                         CaptureButton(
@@ -619,7 +619,7 @@ class _ScanCccdPageState extends State<ScanCccdPage>
                         ScanSquareButton(
                           icon: Icons.edit_note, // Icon nhập tay
                           iconColor: AppColors.red,
-                          bgColor: AppColors.red.withOpacity(0.1),
+                          bgColor: AppColors.red.withValues(alpha: 0.1),
                           onTap: _navigateToManualInput,
                         ),
                       ],

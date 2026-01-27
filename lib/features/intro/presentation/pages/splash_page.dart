@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
+
 import '../../../../injection_container.dart' as di;
 import '../../../auth/data/auth_service.dart';
 import '../../../auth/presentation/pages/login_page.dart';

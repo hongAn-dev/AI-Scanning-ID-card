@@ -104,11 +104,11 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.red),
+                          borderSide: const BorderSide(color: AppColors.red),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.red),
+                          borderSide: const BorderSide(color: AppColors.red),
                         ),
                         labelStyle: const TextStyle(color: Colors.black),
                       ),
@@ -146,11 +146,11 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.red),
+                          borderSide: const BorderSide(color: AppColors.red),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.red),
+                          borderSide: const BorderSide(color: AppColors.red),
                         ),
                       ),
                       validator: (value) {
@@ -173,7 +173,7 @@ class _ChangePasswordBottomSheetState extends State<ChangePasswordBottomSheet> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: AppColors.red),
+                          side: const BorderSide(color: AppColors.red),
                         ),
                         backgroundColor: AppColors.red,
                         foregroundColor: Colors.white,
