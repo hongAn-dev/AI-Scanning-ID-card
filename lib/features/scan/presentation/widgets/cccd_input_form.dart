@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -326,7 +327,11 @@ class _CccdInputFormState extends State<CccdInputForm> {
 
             // --- FORM FIELDS ---
             _buildLabel('Họ và tên'),
-            _buildTextField(controller: _nameCtrl, icon: Icons.person),
+            _buildTextField(
+              controller: _nameCtrl,
+              icon: Icons.person,
+              inputFormatters: [UpperCaseTextFormatter()],
+            ),
             const SizedBox(height: 16),
 
             _buildLabel(widget.scannedData['type'] == 'PASSPORT'
@@ -699,6 +704,7 @@ class _CccdInputFormState extends State<CccdInputForm> {
     required IconData icon,
     bool isVerified = false,
     int maxLines = 1,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
@@ -719,6 +725,7 @@ class _CccdInputFormState extends State<CccdInputForm> {
             child: TextField(
               controller: controller,
               maxLines: maxLines,
+              inputFormatters: inputFormatters,
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 isDense: true,
