@@ -71,9 +71,23 @@ class _CccdInputFormState extends State<CccdInputForm> {
     _originCtrl = TextEditingController(text: data['hometown'] ?? '');
     _residenceCtrl = TextEditingController(text: data['residence'] ?? '');
 
-    _dob = _parseDate(data['dob']);
-    _issueDate = _parseDate(data['issueDate']);
-    _expiryDate = _parseDate(data['expiry']);
+    // [FIX] Robust Date Parsing for CCCD
+    // AI might return keys like "issueDate", "issuedate", "date_of_issue", "issue"
+    String? getVal(List<String> keys) {
+      for (var k in keys) {
+        if (data.containsKey(k) &&
+            data[k] != null &&
+            data[k].toString().isNotEmpty) return data[k].toString();
+        if (data.containsKey(k.toLowerCase()) && data[k.toLowerCase()] != null)
+          return data[k.toLowerCase()].toString();
+      }
+      return null;
+    }
+
+    _dob = _parseDate(getVal(['dob', 'birth_date', 'birthday']));
+    _issueDate = _parseDate(
+        getVal(['issueDate', 'issuedate', 'issue', 'date_of_issue', 'doi']));
+    _expiryDate = _parseDate(getVal(['expiry', 'expiration_date', 'doe']));
 
     String sexRaw = (data['sex'] ?? 'Nam').toLowerCase();
     if (sexRaw.contains('nam') || sexRaw.contains('male') || sexRaw == 'm') {
@@ -84,11 +98,19 @@ class _CccdInputFormState extends State<CccdInputForm> {
   }
 
   DateTime _parseDate(String? dateStr) {
-    if (dateStr == null || dateStr.isEmpty) return DateTime.now();
+    if (dateStr == null || dateStr.trim().isEmpty) return DateTime.now();
+    String cleanStr = dateStr.trim().replaceAll('-', '/').replaceAll('.', '/');
     try {
-      return DateFormat('dd/MM/yyyy').parse(dateStr.replaceAll('-', '/'));
-    } catch (e) {
-      return DateTime.now();
+      // Try standard formats
+      return DateFormat('dd/MM/yyyy').parse(cleanStr);
+    } catch (_) {
+      try {
+        // Try MM/dd/yyyy
+        return DateFormat('MM/dd/yyyy').parse(cleanStr);
+      } catch (e) {
+        // If generic text like "Không thời hạn", return default or handle gracefully
+        return DateTime.now();
+      }
     }
   }
 
@@ -614,70 +636,77 @@ class _CccdInputFormState extends State<CccdInputForm> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext ctx) {
-                      return AlertDialog(
-                        title: const Text("Xác nhận"),
-                        content: const Text(
-                            "Bạn có chắc chắn muốn xóa khách hàng này không?"),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(),
-                            child: const Text("Hủy",
-                                style: TextStyle(color: Colors.grey)),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              final customerId =
-                                  widget.scannedData['customerId'];
-                              if (customerId == null || customerId.isEmpty) {
+            if (widget.scannedData['customerId'] != null &&
+                widget.scannedData['customerId']
+                    .toString()
+                    .trim()
+                    .isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext ctx) {
+                        return AlertDialog(
+                          title: const Text("Xác nhận"),
+                          content: const Text(
+                              "Bạn có chắc chắn muốn xóa khách hàng này không?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(),
+                              child: const Text("Hủy",
+                                  style: TextStyle(color: Colors.grey)),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                final customerId =
+                                    widget.scannedData['customerId'];
+                                if (customerId == null || customerId.isEmpty) {
+                                  Navigator.of(ctx).pop(); // Close Dialog
+                                  Navigator.of(context).pop(true); // Exit Page
+                                  return;
+                                }
+
                                 Navigator.of(ctx).pop(); // Close Dialog
-                                Navigator.of(context).pop(true); // Exit Page
-                                return;
-                              }
 
-                              Navigator.of(ctx).pop(); // Close Dialog
+                                // [FIX] Update flag to let BlocListener know we are performing an action
+                                if (mounted)
+                                  setState(() => _isSubmitting = true);
 
-                              // [FIX] Update flag to let BlocListener know we are performing an action
-                              if (mounted) setState(() => _isSubmitting = true);
-
-                              // Call Delete
-                              context
-                                  .read<CustomerCubit>()
-                                  .deleteCustomer(customerId);
-                            },
-                            child: const Text("Xóa",
-                                style: TextStyle(color: AppColors.red)),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                icon: const Icon(Icons.delete_outline, color: AppColors.red),
-                label: const Text(
-                  'Xóa khách hàng',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.red,
+                                // Call Delete
+                                context
+                                    .read<CustomerCubit>()
+                                    .deleteCustomer(customerId);
+                              },
+                              child: const Text("Xóa",
+                                  style: TextStyle(color: AppColors.red)),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.delete_outline, color: AppColors.red),
+                  label: const Text(
+                    'Xóa khách hàng',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.red,
+                    ),
                   ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.red),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.red),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
             const SizedBox(height: 20),
           ],
         ),
